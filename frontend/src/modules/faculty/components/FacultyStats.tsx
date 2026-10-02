@@ -12,7 +12,7 @@ export const FacultyStats: React.FC<FacultyStatsProps> = ({ dashboard, loading }
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="glass-card rounded-xl p-5 h-28 animate-pulse bg-slate-900/50" />
+          <div key={i} className="bg-white border border-slate-200 rounded-lg p-5 h-24 animate-pulse" />
         ))}
       </div>
     );
@@ -27,31 +27,31 @@ export const FacultyStats: React.FC<FacultyStatsProps> = ({ dashboard, loading }
   const stats = [
     {
       label: 'Class Incharge Role',
-      value: isClassIncharge ? 'Assigned' : 'Not Assigned',
-      subtext: isClassIncharge ? assignedClass?.name : 'Subject Teacher Mode',
+      value: isClassIncharge ? 'Assigned' : 'Subject Teacher',
+      subtext: isClassIncharge ? assignedClass?.name : 'Functional Role',
       icon: GraduationCap,
-      color: isClassIncharge ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-slate-400 bg-slate-800/40 border-slate-700',
+      color: isClassIncharge ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100',
     },
     {
-      label: 'My Class Students',
+      label: 'Class Student Strength',
       value: isClassIncharge ? studentCount : '0',
       subtext: isClassIncharge ? `${assignedClass?.name} Enrolled` : 'No Class Incharge',
       icon: Users,
-      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
+      color: 'text-blue-700 bg-blue-50',
     },
     {
-      label: 'Current Semester',
+      label: 'Current Academic Term',
       value: currentSemester !== '—' ? `Semester ${currentSemester}` : 'Active',
       subtext: academicYearName,
       icon: Calendar,
-      color: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+      color: 'text-purple-700 bg-purple-50',
     },
     {
-      label: 'Department',
+      label: 'Affiliated Department',
       value: dashboard?.department?.code?.toUpperCase() || 'LMS',
-      subtext: dashboard?.department?.name || 'Assigned Department',
+      subtext: dashboard?.department?.name || 'Department Division',
       icon: BookOpen,
-      color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+      color: 'text-indigo-700 bg-indigo-50',
     },
   ];
 
@@ -62,22 +62,22 @@ export const FacultyStats: React.FC<FacultyStatsProps> = ({ dashboard, loading }
         return (
           <div
             key={idx}
-            className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:translate-y-[-2px]"
+            className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:border-slate-300 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {stat.label}
                 </p>
-                <h3 className="text-2xl font-extrabold text-white mt-1 tracking-tight">
+                <h3 className="text-xl font-bold text-slate-900 mt-1">
                   {stat.value}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1 truncate max-w-[180px]">
+                <p className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[170px]">
                   {stat.subtext}
                 </p>
               </div>
-              <div className={`p-3 rounded-xl border ${stat.color}`}>
-                <Icon className="w-6 h-6" />
+              <div className={`p-2.5 rounded-lg ${stat.color}`}>
+                <Icon className="w-5 h-5" />
               </div>
             </div>
           </div>
