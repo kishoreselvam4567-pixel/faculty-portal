@@ -1,0 +1,374 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model College {
+  id                   String              @id @default(uuid())
+  name                 String
+  code                 String              @unique
+  type                 String?
+  domain               String?
+  addressLine2         String?
+  city                 String?
+  district             String?
+  state                String?
+  country              String?             @default("India")
+  pincode              String?
+  phone                String?
+  email                String?
+  website              String?
+  establishedYear      Int?
+  affiliatedUniversity String?
+  accreditation        String?
+  naacGrade            String?
+  recognition          String?
+  institutionType      String?
+  principalName        String?
+  principalEmail       String?
+  principalPhone       String?
+  adminOfficeEmail     String?
+  adminOfficePhone     String?
+  linkedinUrl          String?
+  instagramUrl         String?
+  facebookUrl          String?
+  youtubeUrl           String?
+  address              String?
+  admin_email          String?
+  admin_name           String?
+  admin_uid            String?
+  created_at           DateTime            @default(now())
+  is_active            Boolean             @default(true)
+  logo_url             String?
+  updated_at           DateTime            @updatedAt
+  academic_years       AcademicYear[]
+  account_approvals    account_approvals[]
+  authed_users         AuthedUser[]
+  departments          Department[]
+  users                User[]
+
+  @@map("colleges")
+}
+
+model Department {
+  id                                             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  college_id                                     String
+  name                                           String
+  code                                           String
+  hod_uid                                        String?
+  is_active                                      Boolean?     @default(true)
+  created_at                                     DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at                                     DateTime?    @default(now()) @updatedAt @db.Timestamptz(6)
+  users                                          AuthedUser[]
+  college                                        College      @relation(fields: [college_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  authed_users_departments_hod_uidToauthed_users AuthedUser?  @relation("departments_hod_uidToauthed_users", fields: [hod_uid], references: [uid], onUpdate: NoAction)
+  programs                                       Program[]
+  subjects                                       Subject[]
+
+  @@unique([college_id, code])
+  @@map("departments")
+}
+
+model Program {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  department_id  String     @db.Uuid
+  name           String
+  type           String
+  duration_years Int
+  is_active      Boolean?   @default(true)
+  created_at     DateTime?  @default(now()) @db.Timestamptz(6)
+  batches        Batch[]
+  department     Department @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("programs")
+}
+
+model Batch {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  program_id String    @db.Uuid
+  start_year Int
+  end_year   Int
+  is_active  Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  program    Program   @relation(fields: [program_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  classes    Class[]
+
+  @@map("batches")
+}
+
+model Class {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batch_id         String       @db.Uuid
+  name             String
+  current_semester Int?         @default(1)
+  faculty_uid      String?
+  is_active        Boolean?     @default(true)
+  created_at       DateTime?    @default(now()) @db.Timestamptz(6)
+  students         AuthedUser[] @relation("ClassStudents")
+  batch            Batch        @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  incharge_faculty AuthedUser?  @relation("FacultyClassIncharge", fields: [faculty_uid], references: [uid], onUpdate: NoAction)
+
+  @@map("classes")
+}
+
+model AuthedUser {
+  uid                                           String       @id
+  email                                         String       @unique
+  display_name                                  String?
+  photo_url                                     String?
+  provider                                      String?      @default("google")
+  role                                          String?      @default("USER")
+  last_login                                    DateTime?    @default(now()) @db.Timestamptz(6)
+  created_at                                    DateTime?    @default(now()) @db.Timestamptz(6)
+  college_id                                    String?
+  department_id                                 String?      @db.Uuid
+  class_id                                      String?      @db.Uuid
+  register_number                               String?
+  requested_role                                String?
+  approval_status                               String?      @default("PENDING")
+  class                                         Class?       @relation("ClassStudents", fields: [class_id], references: [id], onUpdate: NoAction)
+  colleges                                      College?     @relation(fields: [college_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  department                                    Department?  @relation(fields: [department_id], references: [id], onUpdate: NoAction)
+  assigned_classes                              Class[]      @relation("FacultyClassIncharge")
+  departments_departments_hod_uidToauthed_users Department[] @relation("departments_hod_uidToauthed_users")
+
+  @@map("authed_users")
+}
+
+model User {
+  id                                     String              @id @default(uuid())
+  firebaseUid                            String              @unique
+  email                                  String              @unique
+  phone                                  String?
+  collegeId                              String?
+  status                                 AccountStatus       @default(PENDING)
+  createdAt                              DateTime            @default(now())
+  updatedAt                              DateTime
+  account_approvals                      account_approvals[]
+  audit_logs_audit_logs_actorIdTousers   audit_logs[]        @relation("audit_logs_actorIdTousers")
+  audit_logs_audit_logs_subjectIdTousers audit_logs[]        @relation("audit_logs_subjectIdTousers")
+  profiles                               Profile?
+  sessions                               sessions[]
+  user_roles                             user_roles[]
+  colleges                               College?            @relation(fields: [collegeId], references: [id])
+
+  @@index([collegeId])
+  @@index([firebaseUid])
+  @@map("users")
+}
+
+model Profile {
+  id                          String    @id @default(uuid())
+  userId                      String    @unique
+  firstName                   String?
+  lastName                    String?
+  displayName                 String?
+  phone                       String?
+  dateOfBirth                 DateTime? @db.Date
+  gender                      String?
+  designation                 String?
+  department                  String?
+  employeeId                  String?
+  studentId                   String?
+  enrollmentYear              Int?
+  profilePhotoUrl             String?
+  bio                         String?
+  address                     String?
+  city                        String?
+  state                       String?
+  linkedinUrl                 String?
+  profileCompletionPercentage Int       @default(0)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime
+  users                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Subject {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  department_id   String     @db.Uuid
+  name            String
+  code            String
+  credits         Int?       @default(3)
+  semester_number Int
+  is_active       Boolean?   @default(true)
+  created_at      DateTime?  @default(now()) @db.Timestamptz(6)
+  department      Department @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("subjects")
+}
+
+model AcademicYear {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  college_id String
+  name       String
+  start_date DateTime   @db.Date
+  end_date   DateTime   @db.Date
+  is_current Boolean?   @default(false)
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  colleges   College    @relation(fields: [college_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  semesters  Semester[]
+
+  @@map("academic_years")
+}
+
+model Semester {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  academic_year_id String       @db.Uuid
+  term_number      Int
+  start_date       DateTime     @db.Date
+  end_date         DateTime     @db.Date
+  created_at       DateTime?    @default(now()) @db.Timestamptz(6)
+  academic_year    AcademicYear @relation(fields: [academic_year_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("semesters")
+}
+
+model account_approvals {
+  id               String         @id
+  userId           String
+  requestedRole    RoleName
+  requestedCollege String
+  status           ApprovalStatus @default(PENDING)
+  requestedAt      DateTime       @default(now())
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  rejectionReason  String?
+  notes            String?
+  colleges         College        @relation(fields: [requestedCollege], references: [id])
+  users            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([requestedCollege])
+  @@index([status])
+  @@index([userId])
+}
+
+model audit_logs {
+  id                                String      @id
+  action                            AuditAction
+  actorId                           String?
+  subjectId                         String?
+  collegeId                         String?
+  ipAddress                         String?
+  userAgent                         String?
+  metadata                          Json?
+  createdAt                         DateTime    @default(now())
+  users_audit_logs_actorIdTousers   User?       @relation("audit_logs_actorIdTousers", fields: [actorId], references: [id])
+  users_audit_logs_subjectIdTousers User?       @relation("audit_logs_subjectIdTousers", fields: [subjectId], references: [id])
+
+  @@index([action])
+  @@index([actorId])
+  @@index([collegeId])
+  @@index([createdAt])
+  @@index([subjectId])
+}
+
+model permissions {
+  id               String             @id
+  name             String             @unique
+  displayName      String
+  description      String?
+  module           String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  role_permissions role_permissions[]
+}
+
+model role_permissions {
+  id           String      @id
+  roleId       String
+  permissionId String
+  createdAt    DateTime    @default(now())
+  permissions  permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  roles        roles       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model roles {
+  id               String             @id
+  name             RoleName           @unique
+  displayName      String
+  description      String?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+}
+
+model sessions {
+  id            String    @id
+  userId        String
+  ipAddress     String?
+  userAgent     String?
+  firebaseToken String?
+  isActive      Boolean   @default(true)
+  lastActiveAt  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  revokedAt     DateTime?
+  users         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model user_roles {
+  id         String   @id
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+  assignedBy String?
+  roles      roles    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  users      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  DISABLED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AuditAction {
+  ACCOUNT_CREATED
+  LOGIN
+  LOGOUT
+  ACCOUNT_APPROVED
+  ACCOUNT_REJECTED
+  ROLE_CHANGED
+  ROLE_ASSIGNED
+  ROLE_REMOVED
+  COLLEGE_CHANGED
+  PROFILE_UPDATED
+  PASSWORD_CHANGED
+  SESSION_REVOKED
+  AUTHORIZATION_FAILURE
+  ACCOUNT_SUSPENDED
+  ACCOUNT_DISABLED
+  ACCOUNT_REACTIVATED
+}
+
+enum RoleName {
+  STUDENT
+  FACULTY
+  TRAINER
+  HOD
+  TPO
+  COLLEGE_ADMIN
+  SUPERINTENDENT
+  SUPER_ADMIN
+}
