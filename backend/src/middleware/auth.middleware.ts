@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../lib/prisma';
+import { prisma, isDatabaseAvailable } from '../lib/prisma';
 import { firebaseAdmin } from '../lib/firebase';
 import { AuthenticatedUserContext } from '../modules/faculty/faculty.types';
-import { devMockUsers } from '../modules/faculty/faculty.mock';
-import { isDatabaseOnline, markDatabaseOffline } from '../lib/dbHealth';
 
 declare global {
   namespace Express {
@@ -33,7 +31,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
           uid = decodedToken.uid;
           email = decodedToken.email || null;
         } catch (verifyErr) {
-          // In development mode, safely extract UID from JWT payload to prevent 500 errors
+          // In development mode, safely extract UID from JWT payload to prevent errors
           if (process.env.NODE_ENV !== 'production' && token.includes('.')) {
             try {
               const parts = token.split('.');
@@ -43,7 +41,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
                 email = payload.email || null;
               }
             } catch {
-              // Fallback
+              // Ignore parse error and proceed to fallback
             }
           }
         }
@@ -59,7 +57,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       uid = 'D679ftp5r9QC8zzybJkGAokVZ2d2';
     }
 
-    // Ensure UID is not a raw token (safe length check)
+    // Ensure UID is not a raw token
     if (uid && uid.length > 100) {
       uid = devUidHeader || 'D679ftp5r9QC8zzybJkGAokVZ2d2';
     }
@@ -69,10 +67,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // Lookup user in authed_users
+    // Lookup user in authed_users directly from real database if available
     let authedUser: any = null;
-    const dbOnline = await isDatabaseOnline();
-
+    const dbOnline = await isDatabaseAvailable();
     if (dbOnline) {
       try {
         authedUser = await prisma.authedUser.findUnique({
@@ -81,16 +78,37 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
             department: true,
           },
         });
+
+        // If specific UID not found in DB, try finding the first active faculty user
+        if (!authedUser && process.env.NODE_ENV !== 'production') {
+          authedUser = await prisma.authedUser.findFirst({
+            where: {
+              role: { in: ['FACULTY', 'HOD', 'ADMIN'] },
+            },
+            include: {
+              department: true,
+            },
+          });
+        }
       } catch (dbErr: any) {
-        markDatabaseOffline();
-        if (process.env.NODE_ENV !== 'production') {
-          authedUser = devMockUsers[uid] || devMockUsers['D679ftp5r9QC8zzybJkGAokVZ2d2'];
-        } else {
-          throw dbErr;
+        if (process.env.NODE_ENV === 'production') {
+          res.status(500).json({ error: 'Database connection error during authentication' });
+          return;
         }
       }
-    } else {
-      authedUser = devMockUsers[uid] || devMockUsers['D679ftp5r9QC8zzybJkGAokVZ2d2'];
+    }
+
+    // In development mode, if user not found or database offline, use authentic project developer context
+    if (!authedUser && process.env.NODE_ENV !== 'production') {
+      authedUser = {
+        uid: uid || 'D679ftp5r9QC8zzybJkGAokVZ2d2',
+        email: email || 'amirthavarsshan0806@gmail.com',
+        role: 'FACULTY',
+        department_id: '1aa45ae9-e872-4931-8e67-22f5119ce498',
+        college_id: 'col-1790654578727-zhdd',
+        display_name: 'Amirtha Varsshan',
+        photo_url: 'https://lh3.googleusercontent.com/a/ACg8ocIZT0mWV7ImfTPyYg-2U3ErKUqIgVhK-3I7hKa9mo63pVi5Rg=s96-c',
+      };
     }
 
     if (!authedUser) {
@@ -111,7 +129,6 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    // In development mode, recover automatically instead of locking out localhost
     if (process.env.NODE_ENV !== 'production') {
       req.user = {
         uid: 'D679ftp5r9QC8zzybJkGAokVZ2d2',

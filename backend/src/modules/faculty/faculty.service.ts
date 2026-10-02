@@ -257,7 +257,7 @@ export class FacultyService {
       code: dept.code,
       collegeName: dept.college?.name || null,
       hodName: dept.authed_users_departments_hod_uidToauthed_users?.display_name || null,
-      programs: dept.programs.map((p) => ({
+      programs: (dept.programs || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         type: p.type,
