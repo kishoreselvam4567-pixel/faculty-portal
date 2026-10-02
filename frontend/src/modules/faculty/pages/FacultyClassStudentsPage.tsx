@@ -21,21 +21,21 @@ export const FacultyClassStudentsPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <Link
           to={`/classes/${classId}`}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Class Overview</span>
         </Link>
       </div>
 
-      <div>
+      <div className="bg-[#0B132B] border border-slate-800 rounded-xl p-6 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <Users className="w-8 h-8 text-brand-400" />
+          <Users className="w-8 h-8 text-blue-400 shrink-0" />
           <span>
             {selectedClass ? `${selectedClass.name} — Student Directory` : 'Class Students'}
           </span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-slate-300 mt-2">
           Registered students enrolled in this class under your incharge stewardship.
         </p>
       </div>

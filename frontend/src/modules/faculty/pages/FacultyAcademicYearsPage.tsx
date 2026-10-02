@@ -12,12 +12,12 @@ export const FacultyAcademicYearsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="bg-[#0B132B] border border-slate-800 rounded-xl p-6 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <Calendar className="w-8 h-8 text-brand-400" />
+          <Calendar className="w-8 h-8 text-blue-400 shrink-0" />
           <span>Academic Sessions & Terms</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-slate-300 mt-2">
           College academic calendar, ongoing session, and semester duration schedules.
         </p>
       </div>
