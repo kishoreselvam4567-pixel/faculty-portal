@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { firebaseAdmin } from '../lib/firebase';
 import { AuthenticatedUserContext } from '../modules/faculty/faculty.types';
+import { devMockUsers } from '../modules/faculty/faculty.mock';
+import { isDatabaseOnline, markDatabaseOffline } from '../lib/dbHealth';
 
 declare global {
   namespace Express {
@@ -67,26 +69,26 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // Lookup user in authed_users with error handling
-    let authedUser = null;
-    try {
-      authedUser = await prisma.authedUser.findUnique({
-        where: { uid },
-        include: {
-          department: true,
-        },
-      });
-    } catch (dbErr) {
-      console.warn('Database lookup error in authMiddleware, attempting fallback:', dbErr);
+    // Lookup user in authed_users
+    let authedUser: any = null;
+    const dbOnline = await isDatabaseOnline();
+
+    if (dbOnline) {
+      try {
+        authedUser = await prisma.authedUser.findUnique({
+          where: { uid },
+          include: {
+            department: true,
+          },
+        });
+      } catch (dbErr: any) {
+        markDatabaseOffline();
+        console.warn('Database lookup error in authMiddleware, attempting fallback:', dbErr);
+      }
     }
 
-    // If user not found in database and in development mode, fallback to default user
     if (!authedUser && process.env.NODE_ENV !== 'production') {
-      authedUser = await prisma.authedUser.findFirst({
-        include: {
-          department: true,
-        },
-      });
+      authedUser = devMockUsers[uid] || devMockUsers['D679ftp5r9QC8zzybJkGAokVZ2d2'];
     }
 
     if (!authedUser) {

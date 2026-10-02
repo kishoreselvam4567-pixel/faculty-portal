@@ -33,6 +33,10 @@ app.get('/api/auth/users-list', async (req, res) => {
     });
     res.json(users);
   } catch (error: any) {
+    if (process.env.NODE_ENV !== 'production') {
+      const { devMockUsers } = await import('./modules/faculty/faculty.mock');
+      return res.json(Object.values(devMockUsers));
+    }
     res.status(500).json({ error: error.message });
   }
 });
