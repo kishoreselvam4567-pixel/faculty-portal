@@ -273,4 +273,158 @@ export class FacultyRepository {
       ],
     });
   }
+
+  async searchAll(facultyUid: string, query: string) {
+    const q = query.trim();
+    if (!q) {
+      return { classes: [], students: [], subjects: [], academicYears: [] };
+    }
+
+    const authedUser = await this.getAuthedUser(facultyUid);
+    const collegeId = authedUser?.college_id || 'col-1790654578727-zhdd';
+    const departmentId = authedUser?.department_id;
+
+    // Search classes
+    const classes = await prisma.class.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { faculty_uid: facultyUid },
+              ...(departmentId ? [{ batch: { program: { department_id: departmentId } } }] : []),
+            ],
+          },
+          {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { batch: { program: { name: { contains: q, mode: 'insensitive' } } } },
+            ],
+          },
+        ],
+      },
+      include: {
+        batch: {
+          include: {
+            program: true,
+          },
+        },
+        _count: {
+          select: {
+            students: true,
+          },
+        },
+      },
+      take: 6,
+    });
+
+    // Search students
+    const students = await prisma.authedUser.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { class: { faculty_uid: facultyUid } },
+              ...(departmentId ? [{ department_id: departmentId }] : []),
+            ],
+          },
+          {
+            role: 'STUDENT',
+          },
+          {
+            OR: [
+              { display_name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+              { register_number: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+        ],
+      },
+      select: {
+        uid: true,
+        display_name: true,
+        email: true,
+        photo_url: true,
+        register_number: true,
+        class: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      take: 6,
+    });
+
+    // Search subjects
+    const subjects = departmentId
+      ? await prisma.subject.findMany({
+          where: {
+            department_id: departmentId,
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { code: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+          take: 6,
+        })
+      : await prisma.subject.findMany({
+          where: {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { code: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+          take: 6,
+        });
+
+    // Search academic years
+    const academicYears = collegeId
+      ? await prisma.academicYear.findMany({
+          where: {
+            college_id: collegeId,
+            name: { contains: q, mode: 'insensitive' },
+          },
+          include: {
+            semesters: true,
+          },
+          take: 4,
+        })
+      : [];
+
+    return {
+      classes: classes.map((c) => ({
+        id: c.id,
+        title: c.name,
+        subtitle: `${c.batch?.program?.name || 'Class'} • Sem ${c.current_semester || 1}`,
+        category: 'class' as const,
+        url: `/classes/${c.id}`,
+        meta: `${c._count.students} students`,
+      })),
+      students: students.map((s) => ({
+        id: s.uid,
+        title: s.display_name || s.email,
+        subtitle: `${s.register_number ? `Reg: ${s.register_number}` : s.email}${s.class?.name ? ` • ${s.class.name}` : ''}`,
+        category: 'student' as const,
+        url: `/students/${s.uid}`,
+        meta: s.register_number || undefined,
+      })),
+      subjects: subjects.map((sub) => ({
+        id: sub.id,
+        title: sub.name,
+        subtitle: `${sub.code} • Sem ${sub.semester_number} • ${sub.credits || 3} Credits`,
+        category: 'subject' as const,
+        url: '/subjects',
+        meta: sub.code,
+      })),
+      academicYears: academicYears.map((ay) => ({
+        id: ay.id,
+        title: ay.name,
+        subtitle: `Academic Session • ${ay.semesters.length} Semesters`,
+        category: 'academic' as const,
+        url: '/academic',
+        meta: ay.is_current ? 'Current Session' : undefined,
+      })),
+    };
+  }
 }
+

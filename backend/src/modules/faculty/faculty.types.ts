@@ -198,3 +198,20 @@ export interface SemesterInfo {
   endDate: Date;
   isCurrent: boolean;
 }
+
+export interface FacultySearchResultItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: 'class' | 'student' | 'subject' | 'academic';
+  url: string;
+  meta?: string;
+}
+
+export interface FacultySearchResults {
+  classes: FacultySearchResultItem[];
+  students: FacultySearchResultItem[];
+  subjects: FacultySearchResultItem[];
+  academicYears: FacultySearchResultItem[];
+}
+

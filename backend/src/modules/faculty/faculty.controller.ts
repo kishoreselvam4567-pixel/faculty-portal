@@ -152,4 +152,17 @@ export class FacultyController {
       res.status(error.status || 500).json({ error: error.message || 'Failed to fetch semesters' });
     }
   };
+
+  search = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const uid = req.user!.uid;
+      const q = (req.query.q as string) || '';
+      const results = await this.service.search(uid, q);
+      res.json(results);
+    } catch (error: any) {
+      console.error('search error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Search failed' });
+    }
+  };
 }
+

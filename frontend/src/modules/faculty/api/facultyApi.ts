@@ -10,6 +10,7 @@ import {
   SubjectInfo,
   AcademicYearInfo,
   SemesterInfo,
+  FacultySearchResults,
 } from '../types/faculty.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -95,6 +96,14 @@ export const facultyApi = {
 
   getSemesters: async (): Promise<SemesterInfo[]> => {
     const res = await api.get<SemesterInfo[]>('/faculty/semesters');
+    return res.data;
+  },
+
+  // Global search
+  search: async (query: string): Promise<FacultySearchResults> => {
+    const res = await api.get<FacultySearchResults>('/faculty/search', {
+      params: { q: query },
+    });
     return res.data;
   },
 

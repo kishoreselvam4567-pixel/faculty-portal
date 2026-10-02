@@ -19,7 +19,7 @@ export const FacultyClassDetailsPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/classes"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Classes</span>
@@ -28,7 +28,7 @@ export const FacultyClassDetailsPage: React.FC = () => {
         {selectedClass && (
           <Link
             to={`/classes/${classId}/students`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-500/20 transition-all"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
           >
             <Users className="w-4 h-4" />
             <span>View Student Roster</span>
@@ -38,15 +38,15 @@ export const FacultyClassDetailsPage: React.FC = () => {
       </div>
 
       {error ? (
-        <div className="glass-card rounded-2xl p-8 text-center max-w-lg mx-auto space-y-3">
-          <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
-          <h3 className="text-lg font-bold text-white">Access Denied</h3>
-          <p className="text-xs text-slate-400">{error}</p>
+        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-center max-w-lg mx-auto space-y-2">
+          <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+          <h3 className="text-sm font-bold text-rose-900">Access Denied</h3>
+          <p className="text-xs text-rose-600">{error}</p>
         </div>
       ) : selectedClass ? (
         <ClassDetails cls={selectedClass} />
       ) : (
-        <div className="glass-card rounded-2xl p-8 h-48 animate-pulse" />
+        <div className="border border-slate-200 rounded-lg bg-white p-8 h-48 animate-pulse" />
       )}
     </div>
   );

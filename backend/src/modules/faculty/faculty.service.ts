@@ -10,6 +10,7 @@ import {
   SubjectInfo,
   AcademicYearInfo,
   SemesterInfo,
+  FacultySearchResults,
 } from './faculty.types';
 
 export class FacultyService {
@@ -308,4 +309,9 @@ export class FacultyService {
       isCurrent: false,
     }));
   }
+
+  async search(uid: string, query: string): Promise<FacultySearchResults> {
+    return this.repo.searchAll(uid, query);
+  }
 }
+

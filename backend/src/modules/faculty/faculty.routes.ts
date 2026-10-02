@@ -17,8 +17,9 @@ router.use(authMiddleware);
 // Enforce role = FACULTY on all faculty routes (or HOD who acts as faculty if permitted)
 router.use(requireFaculty);
 
-// Dashboard
+// Dashboard & Search
 router.get('/dashboard', controller.getDashboard);
+router.get('/search', controller.search);
 
 // Profile
 router.get('/profile', controller.getProfile);
