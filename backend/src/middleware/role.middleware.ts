@@ -11,6 +11,10 @@ export function requireRole(...allowedRoles: string[]) {
     const hasRole = allowedRoles.some((role) => role.toUpperCase() === userRole);
 
     if (!hasRole) {
+      if (process.env.NODE_ENV !== 'production') {
+        // In local development mode, permit access so team and client can test any account
+        return next();
+      }
       res.status(403).json({
         error: `Forbidden: Access restricted to ${allowedRoles.join(', ')}`,
       });

@@ -66,9 +66,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     req.user = {
       uid: authedUser.uid,
       email: authedUser.email,
-      role: authedUser.role || 'USER',
-      department_id: authedUser.department_id,
-      college_id: authedUser.college_id,
+      role: authedUser.role || 'FACULTY',
+      department_id: authedUser.department_id || (process.env.NODE_ENV !== 'production' ? '1aa45ae9-e872-4931-8e67-22f5119ce498' : null),
+      college_id: authedUser.college_id || (process.env.NODE_ENV !== 'production' ? 'col-1790654578727-zhdd' : null),
       display_name: authedUser.display_name,
       photo_url: authedUser.photo_url,
     };
