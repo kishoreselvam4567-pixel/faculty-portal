@@ -110,7 +110,8 @@ model Class {
   created_at       DateTime?    @default(now()) @db.Timestamptz(6)
   students         AuthedUser[] @relation("ClassStudents")
   batch            Batch        @relation(fields: [batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  incharge_faculty AuthedUser?  @relation("FacultyClassIncharge", fields: [faculty_uid], references: [uid], onUpdate: NoAction)
+  incharge_faculty    AuthedUser?         @relation("FacultyClassIncharge", fields: [faculty_uid], references: [uid], onUpdate: NoAction)
+  attendance_sessions AttendanceSession[]
 
   @@map("classes")
 }
@@ -133,8 +134,10 @@ model AuthedUser {
   class                                         Class?       @relation("ClassStudents", fields: [class_id], references: [id], onUpdate: NoAction)
   colleges                                      College?     @relation(fields: [college_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   department                                    Department?  @relation(fields: [department_id], references: [id], onUpdate: NoAction)
-  assigned_classes                              Class[]      @relation("FacultyClassIncharge")
-  departments_departments_hod_uidToauthed_users Department[] @relation("departments_hod_uidToauthed_users")
+  assigned_classes                              Class[]             @relation("FacultyClassIncharge")
+  departments_departments_hod_uidToauthed_users Department[]        @relation("departments_hod_uidToauthed_users")
+  attendance_sessions                           AttendanceSession[] @relation("FacultyAttendanceSessions")
+  attendance_records                            AttendanceRecord[]  @relation("StudentAttendanceRecords")
 
   @@map("authed_users")
 }
@@ -197,8 +200,9 @@ model Subject {
   credits         Int?       @default(3)
   semester_number Int
   is_active       Boolean?   @default(true)
-  created_at      DateTime?  @default(now()) @db.Timestamptz(6)
-  department      Department @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  created_at          DateTime?           @default(now()) @db.Timestamptz(6)
+  department          Department          @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  attendance_sessions AttendanceSession[]
 
   @@map("subjects")
 }
@@ -372,3 +376,44 @@ enum RoleName {
   SUPERINTENDENT
   SUPER_ADMIN
 }
+
+model AttendanceSession {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  class_id    String             @db.Uuid
+  faculty_uid String
+  subject_id  String?            @db.Uuid
+  date        DateTime           @db.Date
+  period      String             @default("Period 1")
+  remarks     String?
+  created_at  DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?          @default(now()) @updatedAt @db.Timestamptz(6)
+  class       Class              @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  faculty     AuthedUser         @relation("FacultyAttendanceSessions", fields: [faculty_uid], references: [uid], onUpdate: NoAction)
+  subject     Subject?           @relation(fields: [subject_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  records     AttendanceRecord[]
+
+  @@unique([class_id, date, period])
+  @@map("attendance_sessions")
+}
+
+model AttendanceRecord {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attendance_session_id String            @db.Uuid
+  student_uid           String
+  status                AttendanceStatus  @default(PRESENT)
+  remarks               String?
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  session               AttendanceSession @relation(fields: [attendance_session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  student               AuthedUser        @relation("StudentAttendanceRecords", fields: [student_uid], references: [uid], onUpdate: NoAction)
+
+  @@unique([attendance_session_id, student_uid])
+  @@map("attendance_records")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+

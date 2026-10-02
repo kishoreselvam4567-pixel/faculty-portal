@@ -7,6 +7,7 @@ import {
   GraduationCap,
   BookOpen,
   Calendar,
+  ClipboardCheck,
   Search,
   Menu,
   X,
@@ -47,6 +48,7 @@ export const FacultyLayout: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'My Assigned Class', path: '/classes', icon: GraduationCap },
+    { label: 'Attendance', path: '/attendance', icon: ClipboardCheck },
     { label: 'My Profile', path: '/profile', icon: User },
     { label: 'Department Overview', path: '/department', icon: Building2 },
     { label: 'Courses & Curricula', path: '/subjects', icon: BookOpen },

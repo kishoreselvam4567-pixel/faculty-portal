@@ -11,6 +11,7 @@ import {
   Building2,
   User,
   LayoutDashboard,
+  ClipboardCheck,
   ExternalLink,
   ChevronRight,
 } from 'lucide-react';
@@ -35,6 +36,15 @@ const NAVIGATION_PAGES = [
     url: '/classes',
     meta: 'Incharge',
     keywords: ['classes', 'incharge', 'batch', 'roster', 'students', 'assigned'],
+  },
+  {
+    id: 'page-attendance',
+    title: 'Attendance Management',
+    subtitle: 'Daily student presence, session rosters & shortage alerts',
+    category: 'page' as const,
+    url: '/attendance',
+    meta: 'Attendance',
+    keywords: ['attendance', 'present', 'absent', 'shortage', 'roll', 'roster', 'period', 'session'],
   },
   {
     id: 'page-subjects',
@@ -265,6 +275,8 @@ export const FacultySearchBar: React.FC = () => {
                             <LayoutDashboard className="w-3.5 h-3.5" />
                           ) : page.url === '/classes' ? (
                             <GraduationCap className="w-3.5 h-3.5" />
+                          ) : page.url === '/attendance' ? (
+                            <ClipboardCheck className="w-3.5 h-3.5" />
                           ) : page.url === '/subjects' ? (
                             <BookOpen className="w-3.5 h-3.5" />
                           ) : page.url === '/academic' ? (

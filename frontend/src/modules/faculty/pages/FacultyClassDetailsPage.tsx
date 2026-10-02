@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useFaculty } from '../hooks/useFaculty';
 import { ClassDetails } from '../components/ClassDetails';
-import { ArrowLeft, Users, ArrowRight, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Users, ArrowRight, AlertCircle, ClipboardCheck } from 'lucide-react';
 
 export const FacultyClassDetailsPage: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
@@ -26,14 +26,23 @@ export const FacultyClassDetailsPage: React.FC = () => {
         </Link>
 
         {selectedClass && (
-          <Link
-            to={`/classes/${classId}/students`}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
-          >
-            <Users className="w-4 h-4" />
-            <span>View Student Roster</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/attendance?classId=${classId}`}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 shadow-sm transition-colors"
+            >
+              <ClipboardCheck className="w-4 h-4 text-emerald-600" />
+              <span>Mark Attendance</span>
+            </Link>
+            <Link
+              to={`/classes/${classId}/students`}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              <span>View Student Roster</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         )}
       </div>
 

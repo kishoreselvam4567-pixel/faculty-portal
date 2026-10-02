@@ -11,6 +11,10 @@ import {
   AcademicYearInfo,
   SemesterInfo,
   FacultySearchResults,
+  AttendanceSessionDetail,
+  MarkAttendanceSessionInput,
+  AttendanceSessionSummary,
+  ClassAttendanceStatsResponse,
 } from '../types/faculty.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -104,6 +108,29 @@ export const facultyApi = {
     const res = await api.get<FacultySearchResults>('/faculty/search', {
       params: { q: query },
     });
+    return res.data;
+  },
+
+  // Attendance
+  getAttendanceSession: async (classId: string, date: string, period: string): Promise<AttendanceSessionDetail> => {
+    const res = await api.get<AttendanceSessionDetail>('/faculty/attendance/session', {
+      params: { classId, date, period },
+    });
+    return res.data;
+  },
+
+  saveAttendanceSession: async (input: MarkAttendanceSessionInput): Promise<{ success: boolean; count: number }> => {
+    const res = await api.post<{ success: boolean; count: number }>('/faculty/attendance/session', input);
+    return res.data;
+  },
+
+  getClassAttendanceStats: async (classId: string): Promise<ClassAttendanceStatsResponse> => {
+    const res = await api.get<ClassAttendanceStatsResponse>(`/faculty/attendance/stats/${classId}`);
+    return res.data;
+  },
+
+  getClassAttendanceHistory: async (classId: string): Promise<AttendanceSessionSummary[]> => {
+    const res = await api.get<AttendanceSessionSummary[]>(`/faculty/attendance/history/${classId}`);
     return res.data;
   },
 

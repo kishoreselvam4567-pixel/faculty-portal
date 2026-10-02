@@ -43,4 +43,10 @@ router.get('/subjects', controller.getSubjects);
 router.get('/academic-years', controller.getAcademicYears);
 router.get('/semesters', controller.getSemesters);
 
+// Attendance Management
+router.get('/attendance/session', controller.getAttendanceSession);
+router.post('/attendance/session', controller.saveAttendanceSession);
+router.get('/attendance/stats/:classId', controller.getClassAttendanceStats);
+router.get('/attendance/history/:classId', controller.getClassAttendanceHistory);
+
 export default router;

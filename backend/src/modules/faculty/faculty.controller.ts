@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FacultyService } from './faculty.service';
-import { updateProfileSchema, semesterQuerySchema } from './faculty.validation';
+import { updateProfileSchema, semesterQuerySchema, markAttendanceSchema } from './faculty.validation';
 
 export class FacultyController {
   constructor(private service: FacultyService) {}
@@ -164,5 +164,73 @@ export class FacultyController {
       res.status(error.status || 500).json({ error: error.message || 'Search failed' });
     }
   };
+
+  getAttendanceSession = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const classId = req.query.classId as string;
+      const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
+      const period = (req.query.period as string) || 'Period 1';
+
+      if (!classId) {
+        res.status(400).json({ error: 'classId query parameter is required' });
+        return;
+      }
+
+      const session = await this.service.getAttendanceSession(classId, date, period);
+      res.json(session);
+    } catch (error: any) {
+      console.error('getAttendanceSession error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Failed to fetch attendance session' });
+    }
+  };
+
+  saveAttendanceSession = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const facultyUid = req.user!.uid;
+      const parsed = markAttendanceSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        res.status(400).json({ error: 'Validation failed', details: parsed.error.format() });
+        return;
+      }
+
+      const result = await this.service.saveAttendanceSession(facultyUid, parsed.data);
+      res.json(result);
+    } catch (error: any) {
+      console.error('saveAttendanceSession error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Failed to save attendance session' });
+    }
+  };
+
+  getClassAttendanceStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const classId = req.params.classId as string;
+      if (!classId) {
+        res.status(400).json({ error: 'classId parameter is required' });
+        return;
+      }
+      const stats = await this.service.getClassAttendanceStats(classId);
+      res.json(stats);
+    } catch (error: any) {
+      console.error('getClassAttendanceStats error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Failed to fetch attendance stats' });
+    }
+  };
+
+  getClassAttendanceHistory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const classId = req.params.classId as string;
+      if (!classId) {
+        res.status(400).json({ error: 'classId parameter is required' });
+        return;
+      }
+      const history = await this.service.getClassAttendanceHistory(classId);
+      res.json(history);
+    } catch (error: any) {
+      console.error('getClassAttendanceHistory error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Failed to fetch attendance history' });
+    }
+  };
 }
+
 

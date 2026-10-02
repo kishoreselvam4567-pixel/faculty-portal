@@ -12,3 +12,19 @@ export const updateProfileSchema = z.object({
 export const semesterQuerySchema = z.object({
   semester: z.string().regex(/^\d+$/).transform(Number).optional(),
 });
+
+export const markAttendanceSchema = z.object({
+  classId: z.string().uuid(),
+  subjectId: z.string().uuid().optional().nullable(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be formatted as YYYY-MM-DD'),
+  period: z.string().min(1).max(50),
+  remarks: z.string().max(255).optional().nullable(),
+  records: z.array(
+    z.object({
+      studentUid: z.string().min(1),
+      status: z.enum(['PRESENT', 'ABSENT', 'LATE', 'EXCUSED']),
+      remarks: z.string().max(255).optional().nullable(),
+    })
+  ).min(1, 'At least one student record is required'),
+});
+
