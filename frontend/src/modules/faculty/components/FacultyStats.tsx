@@ -56,28 +56,28 @@ export const FacultyStats: React.FC<FacultyStatsProps> = ({ dashboard, loading }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
           <div
             key={idx}
-            className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:border-slate-300 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                   {stat.label}
                 </p>
-                <h3 className="text-xl font-bold text-slate-900 mt-1">
+                <h3 className="text-lg font-bold text-slate-900 mt-0.5">
                   {stat.value}
                 </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[170px]">
+                <p className="text-[10.5px] text-slate-400 mt-0.5 truncate max-w-[150px]">
                   {stat.subtext}
                 </p>
               </div>
-              <div className={`p-2.5 rounded-lg ${stat.color}`}>
-                <Icon className="w-5 h-5" />
+              <div className={`p-2 rounded-lg ${stat.color} shrink-0`}>
+                <Icon className="w-4 h-4" />
               </div>
             </div>
           </div>
@@ -85,4 +85,5 @@ export const FacultyStats: React.FC<FacultyStatsProps> = ({ dashboard, loading }
       })}
     </div>
   );
+
 };

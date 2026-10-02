@@ -11,17 +11,17 @@ export const FacultyAcademicYearsPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-[#0B132B] via-[#15203D] to-[#1E293B] border border-slate-800 rounded-xl p-6 shadow-md relative overflow-hidden">
-        <div className="flex items-center gap-3.5">
-          <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Calendar className="w-6 h-6" />
+    <div className="space-y-3.5">
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#15203D] to-[#1E293B] border border-slate-800 rounded-xl p-4 sm:p-4.5 shadow-xs relative overflow-hidden">
+        <div className="flex items-center gap-3">
+          <span className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+            <Calendar className="w-5 h-5" />
           </span>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
               Academic Sessions & Terms
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+            <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
               College academic calendar, ongoing session, and semester duration schedules.
             </p>
           </div>
