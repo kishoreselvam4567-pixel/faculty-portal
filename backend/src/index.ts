@@ -5,6 +5,8 @@ import express from 'express';
 import cors from 'cors';
 import facultyRouter from './modules/faculty/faculty.routes';
 import { prisma } from './lib/prisma';
+import { isDatabaseOnline } from './lib/dbHealth';
+import { devMockUsers } from './modules/faculty/faculty.mock';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,21 +26,24 @@ app.get('/api/health', (req, res) => {
 
 // Dev helper endpoint: lists available users in the database for localhost testing
 app.get('/api/auth/users-list', async (req, res) => {
-  try {
-    const users = await prisma.authedUser.findMany({
-      include: {
-        department: true,
-        assigned_classes: true,
-      },
-    });
-    res.json(users);
-  } catch (error: any) {
-    if (process.env.NODE_ENV !== 'production') {
-      const { devMockUsers } = await import('./modules/faculty/faculty.mock');
-      return res.json(Object.values(devMockUsers));
+  const dbOnline = await isDatabaseOnline();
+  if (dbOnline) {
+    try {
+      const users = await prisma.authedUser.findMany({
+        include: {
+          department: true,
+          assigned_classes: true,
+        },
+      });
+      return res.json(users);
+    } catch (error: any) {
+      if (process.env.NODE_ENV !== 'production') {
+        return res.json(Object.values(devMockUsers));
+      }
+      return res.status(500).json({ error: error.message });
     }
-    res.status(500).json({ error: error.message });
   }
+  return res.json(Object.values(devMockUsers));
 });
 
 // Faculty module routes

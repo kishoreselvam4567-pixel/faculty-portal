@@ -10,9 +10,9 @@ export const FacultyDashboard: React.FC = () => {
   const { dashboard, profile, loading, error, loadDashboard, loadProfile } = useFaculty();
 
   useEffect(() => {
-    loadDashboard();
-    loadProfile();
-  }, []);
+    if (!dashboard) loadDashboard();
+    if (!profile) loadProfile();
+  }, [dashboard, profile]);
 
   return (
     <div className="space-y-6">

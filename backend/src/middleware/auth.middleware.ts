@@ -83,11 +83,13 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
         });
       } catch (dbErr: any) {
         markDatabaseOffline();
-        console.warn('Database lookup error in authMiddleware, attempting fallback:', dbErr);
+        if (process.env.NODE_ENV !== 'production') {
+          authedUser = devMockUsers[uid] || devMockUsers['D679ftp5r9QC8zzybJkGAokVZ2d2'];
+        } else {
+          throw dbErr;
+        }
       }
-    }
-
-    if (!authedUser && process.env.NODE_ENV !== 'production') {
+    } else {
       authedUser = devMockUsers[uid] || devMockUsers['D679ftp5r9QC8zzybJkGAokVZ2d2'];
     }
 
