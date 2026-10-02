@@ -16,19 +16,28 @@ export const FacultyDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2.5">
-            <LayoutDashboard className="w-5 h-5 text-slate-800 shrink-0" />
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+      {/* Page Header Banner */}
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#15203D] to-[#1E293B] border border-slate-800 rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative z-10 flex items-center space-x-3.5">
+          <div className="p-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/20 shrink-0">
+            <LayoutDashboard className="w-6 h-6 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Faculty Dashboard
             </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              Department-scoped governance data, assigned classes, and institutional status.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Department-scoped governance data, assigned classes, and institutional status.
-          </p>
         </div>
+        {dashboard?.faculty && (
+          <div className="relative z-10 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-200 text-xs self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-medium">{dashboard.faculty.name}</span>
+          </div>
+        )}
       </div>
 
       {error && (

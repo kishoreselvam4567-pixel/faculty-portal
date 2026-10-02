@@ -28,16 +28,20 @@ export const FacultyClassStudentsPage: React.FC = () => {
         </Link>
       </div>
 
-      <div className="bg-[#0B132B] border border-slate-800 rounded-xl p-6 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <Users className="w-8 h-8 text-blue-400 shrink-0" />
-          <span>
-            {selectedClass ? `${selectedClass.name} — Student Directory` : 'Class Students'}
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#15203D] to-[#1E293B] border border-slate-800 rounded-xl p-6 shadow-md relative overflow-hidden">
+        <div className="flex items-center gap-3.5">
+          <span className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <Users className="w-6 h-6" />
           </span>
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 mt-2">
-          Registered students enrolled in this class under your incharge stewardship.
-        </p>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {selectedClass ? `${selectedClass.name} — Student Directory` : 'Class Students'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              Registered students enrolled in this class under your incharge stewardship.
+            </p>
+          </div>
+        </div>
       </div>
 
       {error ? (

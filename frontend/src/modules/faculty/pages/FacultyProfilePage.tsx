@@ -50,17 +50,22 @@ export const FacultyProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="border-b border-slate-200 pb-4">
-        <div className="flex items-center space-x-2.5">
-          <User className="w-5 h-5 text-slate-800 shrink-0" />
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            My Profile & Credentials
-          </h1>
+      {/* Page Header Banner */}
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#1E1B4B] to-[#15203D] border border-slate-800 rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative z-10 flex items-center space-x-3.5">
+          <div className="p-2.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-400/20 shrink-0">
+            <User className="w-6 h-6 text-indigo-400" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              My Profile & Credentials
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              Personal contact details and institutional faculty credentials.
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-slate-500 mt-1">
-          Personal contact details and institutional faculty credentials.
-        </p>
       </div>
 
       {saveSuccess && (
