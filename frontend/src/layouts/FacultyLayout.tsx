@@ -7,6 +7,7 @@ import {
   GraduationCap,
   BookOpen,
   Calendar,
+  ClipboardCheck,
   Search,
   Menu,
   X,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useFaculty } from '../modules/faculty/hooks/useFaculty';
 import { facultyApi } from '../modules/faculty/api/facultyApi';
-import { GlobalSearchBar } from './GlobalSearchBar';
+import { FacultySearchBar } from '../modules/faculty/components/FacultySearchBar';
 
 interface DevUser {
   uid: string;
@@ -49,6 +50,7 @@ export const FacultyLayout: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'My Assigned Class', path: '/classes', icon: GraduationCap },
+    { label: 'Attendance', path: '/attendance', icon: ClipboardCheck },
     { label: 'My Profile', path: '/profile', icon: User },
     { label: 'Department Overview', path: '/department', icon: Building2 },
     { label: 'Courses & Curricula', path: '/subjects', icon: BookOpen },
@@ -205,8 +207,8 @@ export const FacultyLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
         {/* Top Header Bar */}
         <header className="h-14 px-4 lg:px-6 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 gap-3">
-          {/* Global Search Bar (Classes, Students, Subjects, Syllabus, Portals) */}
-          <GlobalSearchBar />
+          {/* Global Search Bar (Classes, Students, Attendance, Subjects, Academic) */}
+          <FacultySearchBar />
 
           {/* Right Header Status & Switch Faculty Button */}
           <div className="flex items-center gap-2.5 shrink-0">

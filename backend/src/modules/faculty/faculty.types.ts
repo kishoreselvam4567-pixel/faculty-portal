@@ -198,3 +198,100 @@ export interface SemesterInfo {
   endDate: Date;
   isCurrent: boolean;
 }
+
+export interface FacultySearchResultItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: 'class' | 'student' | 'subject' | 'academic';
+  url: string;
+  meta?: string;
+}
+
+export interface FacultySearchResults {
+  classes: FacultySearchResultItem[];
+  students: FacultySearchResultItem[];
+  subjects: FacultySearchResultItem[];
+  academicYears: FacultySearchResultItem[];
+}
+
+export type AttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+
+export interface StudentAttendanceRecord {
+  studentUid: string;
+  displayName: string;
+  registerNumber: string | null;
+  photoUrl: string | null;
+  status: AttendanceStatusType;
+  remarks?: string | null;
+}
+
+export interface AttendanceSessionDetail {
+  id?: string;
+  classId: string;
+  className: string;
+  facultyUid: string;
+  subjectId?: string | null;
+  subjectName?: string | null;
+  date: string;
+  period: string;
+  remarks?: string | null;
+  records: StudentAttendanceRecord[];
+}
+
+export interface MarkAttendanceSessionInput {
+  classId: string;
+  subjectId?: string | null;
+  date: string; // YYYY-MM-DD
+  period: string; // e.g., "Period 1"
+  remarks?: string | null;
+  records: {
+    studentUid: string;
+    status: AttendanceStatusType;
+    remarks?: string | null;
+  }[];
+}
+
+export interface AttendanceSessionSummary {
+  id: string;
+  classId: string;
+  className: string;
+  subjectId?: string | null;
+  subjectName?: string | null;
+  date: string;
+  period: string;
+  remarks?: string | null;
+  totalStudents: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  excusedCount: number;
+  attendancePercentage: number;
+  createdAt: string;
+}
+
+export interface StudentAttendanceStat {
+  studentUid: string;
+  displayName: string;
+  registerNumber: string | null;
+  email: string;
+  photoUrl: string | null;
+  totalSessions: number;
+  presentSessions: number;
+  absentSessions: number;
+  lateSessions: number;
+  excusedSessions: number;
+  percentage: number;
+  isShortage: boolean; // < 75%
+}
+
+export interface ClassAttendanceStatsResponse {
+  classId: string;
+  className: string;
+  totalSessionsConducted: number;
+  averageAttendancePercentage: number;
+  shortageCount: number;
+  students: StudentAttendanceStat[];
+}
+
+

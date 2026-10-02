@@ -38,7 +38,7 @@ export const FacultyStudentDetailsPage: React.FC = () => {
       <div>
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Go Back</span>
@@ -46,26 +46,26 @@ export const FacultyStudentDetailsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="glass-card rounded-2xl p-8 h-64 animate-pulse" />
+        <div className="border border-slate-200 rounded-lg bg-white p-8 h-64 animate-pulse" />
       ) : error ? (
-        <div className="glass-card rounded-2xl p-10 text-center max-w-lg mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/30">
-            <ShieldAlert className="w-8 h-8" />
+        <div className="bg-white border border-rose-200 rounded-xl p-8 text-center max-w-lg mx-auto space-y-3 shadow-sm">
+          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
+            <ShieldAlert className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-white">Student Access Restricted</h3>
-            <p className="text-xs text-slate-400">{error}</p>
+            <h3 className="text-base font-bold text-slate-900">Student Access Restricted</h3>
+            <p className="text-xs text-rose-600">{error}</p>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-[11px] text-slate-400">
             Rule: Faculty members can only view profile details for students belonging to their assigned class.
           </p>
         </div>
       ) : student ? (
         <StudentDetails student={student} />
       ) : (
-        <div className="glass-card rounded-2xl p-8 text-center text-slate-400">
-          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-500" />
-          <p>Student record not found</p>
+        <div className="border border-slate-200 rounded-lg bg-white p-8 text-center text-slate-500">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+          <p className="text-xs">Student record not found</p>
         </div>
       )}
     </div>

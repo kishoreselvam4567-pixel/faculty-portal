@@ -1,3 +1,4 @@
+
 import { Request, Response, NextFunction } from 'express';
 import { prisma, isDatabaseAvailable } from '../lib/prisma';
 import { firebaseAdmin } from '../lib/firebase';

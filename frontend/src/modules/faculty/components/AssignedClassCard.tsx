@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, GraduationCap, ArrowRight, BookOpen } from 'lucide-react';
+import { Users, GraduationCap, ArrowRight, BookOpen, ClipboardCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FacultyClassSummary } from '../types/faculty.types';
 
@@ -59,18 +59,24 @@ export const AssignedClassCard: React.FC<AssignedClassCardProps> = ({ cls }) => 
       <div className="flex items-center gap-2">
         <Link
           to={`/classes/${cls.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>Overview</span>
         </Link>
         <Link
+          to={`/attendance?classId=${cls.id}`}
+          className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition-colors"
+        >
+          <ClipboardCheck className="w-3.5 h-3.5" />
+          <span>Attendance</span>
+        </Link>
+        <Link
           to={`/classes/${cls.id}/students`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
         >
           <Users className="w-3.5 h-3.5" />
           <span>Students</span>
-          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

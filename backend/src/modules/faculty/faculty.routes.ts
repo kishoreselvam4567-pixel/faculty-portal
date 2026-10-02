@@ -17,8 +17,9 @@ router.use(authMiddleware);
 // Enforce role = FACULTY on all faculty routes (or HOD who acts as faculty if permitted)
 router.use(requireFaculty);
 
-// Dashboard
+// Dashboard & Search
 router.get('/dashboard', controller.getDashboard);
+router.get('/search', controller.search);
 
 // Profile
 router.get('/profile', controller.getProfile);
@@ -41,5 +42,11 @@ router.get('/subjects', controller.getSubjects);
 // Academic Info
 router.get('/academic-years', controller.getAcademicYears);
 router.get('/semesters', controller.getSemesters);
+
+// Attendance Management
+router.get('/attendance/session', controller.getAttendanceSession);
+router.post('/attendance/session', controller.saveAttendanceSession);
+router.get('/attendance/stats/:classId', controller.getClassAttendanceStats);
+router.get('/attendance/history/:classId', controller.getClassAttendanceHistory);
 
 export default router;

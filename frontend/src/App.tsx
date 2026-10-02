@@ -13,6 +13,7 @@ import { FacultyClassStudentsPage } from './modules/faculty/pages/FacultyClassSt
 import { FacultyStudentDetailsPage } from './modules/faculty/pages/FacultyStudentDetailsPage';
 import { FacultySubjectsPage } from './modules/faculty/pages/FacultySubjectsPage';
 import { FacultyAcademicYearsPage } from './modules/faculty/pages/FacultyAcademicYearsPage';
+import { FacultyAttendancePage } from './modules/faculty/pages/FacultyAttendancePage';
 
 export const App: React.FC = () => {
   return (
@@ -26,6 +27,8 @@ export const App: React.FC = () => {
             <Route path="classes" element={<FacultyClassesPage />} />
             <Route path="classes/:classId" element={<FacultyClassDetailsPage />} />
             <Route path="classes/:classId/students" element={<FacultyClassStudentsPage />} />
+            <Route path="classes/:classId/attendance" element={<FacultyAttendancePage />} />
+            <Route path="attendance" element={<FacultyAttendancePage />} />
             <Route path="students/:studentId" element={<FacultyStudentDetailsPage />} />
             <Route path="subjects" element={<FacultySubjectsPage />} />
             <Route path="academic" element={<FacultyAcademicYearsPage />} />

@@ -21,7 +21,7 @@ export const FacultyClassStudentsPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <Link
           to={`/classes/${classId}`}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Class Overview</span>
@@ -45,10 +45,10 @@ export const FacultyClassStudentsPage: React.FC = () => {
       </div>
 
       {error ? (
-        <div className="glass-card rounded-2xl p-8 text-center max-w-lg mx-auto space-y-3">
-          <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
-          <h3 className="text-lg font-bold text-white">Access Denied</h3>
-          <p className="text-xs text-slate-400">{error}</p>
+        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-center max-w-lg mx-auto space-y-2">
+          <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+          <h3 className="text-sm font-bold text-rose-900">Access Denied</h3>
+          <p className="text-xs text-rose-600">{error}</p>
         </div>
       ) : (
         <StudentTable students={classStudents} loading={loading.students} />

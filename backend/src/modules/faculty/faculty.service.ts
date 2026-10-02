@@ -10,6 +10,11 @@ import {
   SubjectInfo,
   AcademicYearInfo,
   SemesterInfo,
+  FacultySearchResults,
+  MarkAttendanceSessionInput,
+  AttendanceSessionDetail,
+  AttendanceSessionSummary,
+  ClassAttendanceStatsResponse,
 } from './faculty.types';
 
 export class FacultyService {
@@ -308,4 +313,26 @@ export class FacultyService {
       isCurrent: false,
     }));
   }
+
+  async search(uid: string, query: string): Promise<FacultySearchResults> {
+    return this.repo.searchAll(uid, query);
+  }
+
+  async getAttendanceSession(classId: string, date: string, period: string): Promise<AttendanceSessionDetail> {
+    return this.repo.getAttendanceSession(classId, date, period);
+  }
+
+  async saveAttendanceSession(facultyUid: string, input: MarkAttendanceSessionInput) {
+    return this.repo.saveAttendanceSession(facultyUid, input);
+  }
+
+  async getClassAttendanceStats(classId: string): Promise<ClassAttendanceStatsResponse> {
+    return this.repo.getClassAttendanceStats(classId);
+  }
+
+  async getClassAttendanceHistory(classId: string): Promise<AttendanceSessionSummary[]> {
+    return this.repo.getClassAttendanceHistory(classId);
+  }
 }
+
+
