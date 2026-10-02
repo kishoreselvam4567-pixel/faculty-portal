@@ -222,28 +222,31 @@ export const FacultyAttendancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2.5">
-            <ClipboardCheck className="w-5 h-5 text-blue-600 shrink-0" />
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+      {/* Page Header Banner */}
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#142C44] to-[#15203D] border border-slate-800 rounded-xl p-4 sm:p-4.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative z-10 flex items-center space-x-3">
+          <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/20 shrink-0">
+            <ClipboardCheck className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
               Attendance Management
             </h1>
+            <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
+              Record daily student presence, manage period rosters, and inspect attendance shortage alerts.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Record daily student presence, manage period rosters, and inspect attendance shortage alerts.
-          </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-lg border border-slate-200 self-start sm:self-auto text-xs font-semibold">
+        <div className="relative z-10 flex items-center p-1 bg-slate-900/80 rounded-lg border border-slate-700/60 self-start sm:self-auto text-xs font-semibold backdrop-blur-sm">
           <button
             onClick={() => setActiveTab('mark')}
             className={`px-3 py-1.5 rounded-md transition-all ${
               activeTab === 'mark'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
             Mark Attendance
@@ -252,8 +255,8 @@ export const FacultyAttendancePage: React.FC = () => {
             onClick={() => setActiveTab('stats')}
             className={`px-3 py-1.5 rounded-md transition-all ${
               activeTab === 'stats'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
             Shortage & Stats
@@ -262,8 +265,8 @@ export const FacultyAttendancePage: React.FC = () => {
             onClick={() => setActiveTab('history')}
             className={`px-3 py-1.5 rounded-md transition-all ${
               activeTab === 'history'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
             Session History
