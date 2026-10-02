@@ -25,6 +25,7 @@ export const FacultyAcademicYearsPage: React.FC = () => {
               College academic calendar, ongoing session, and semester duration schedules.
             </p>
           </div>
+        </div>
       </div>
 
       <AcademicCalendar
