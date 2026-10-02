@@ -1,4 +1,5 @@
 import { FacultyRepository } from './faculty.repository';
+import { memoryCache } from '../../lib/cache';
 import {
   FacultyDashboardResponse,
   FacultyProfile,
@@ -21,56 +22,64 @@ export class FacultyService {
   constructor(private repo: FacultyRepository) {}
 
   async getDashboard(uid: string): Promise<FacultyDashboardResponse> {
-    const authedUser = await this.repo.getAuthedUser(uid);
+    const cacheKey = `dashboard:${uid}`;
+    const cached = memoryCache.get<FacultyDashboardResponse>(cacheKey);
+    if (cached) return cached;
+
+    // Parallel query stage 1: authedUser, profile, and assigned classes in parallel
+    const [authedUser, userProfile, assignedClasses] = await Promise.all([
+      this.repo.getAuthedUser(uid),
+      this.repo.getFacultyUserProfile(uid),
+      this.repo.getAssignedClasses(uid),
+    ]);
+
     if (!authedUser) {
       throw new Error('Faculty user record not found');
     }
 
-    const userProfile = await this.repo.getFacultyUserProfile(uid);
-    const assignedClasses = await this.repo.getAssignedClasses(uid);
     const assignedClass = assignedClasses[0] || null;
-
     const deptId = authedUser.department_id || '1aa45ae9-e872-4931-8e67-22f5119ce498';
+    const collegeId = authedUser.college_id || 'col-1790654578727-zhdd';
+
+    // Parallel query stage 2: department and academic year in parallel
+    const [dept, currentYear] = await Promise.all([
+      deptId ? this.repo.getDepartmentById(deptId) : Promise.resolve(null),
+      collegeId ? this.repo.getCurrentAcademicYear(collegeId) : Promise.resolve(null),
+    ]);
+
     let departmentData = null;
-    if (deptId) {
-      const dept = await this.repo.getDepartmentById(deptId);
-      if (dept) {
-        departmentData = {
-          id: dept.id,
-          name: dept.name,
-          code: dept.code,
-          hodName: dept.authed_users_departments_hod_uidToauthed_users?.display_name || null,
-        };
-      }
+    if (dept) {
+      departmentData = {
+        id: dept.id,
+        name: dept.name,
+        code: dept.code,
+        hodName: dept.authed_users_departments_hod_uidToauthed_users?.display_name || null,
+      };
     }
 
     let academicYearData = null;
     let semesterData = null;
 
-    const collegeId = authedUser.college_id || 'col-1790654578727-zhdd';
-    if (collegeId) {
-      const currentYear = await this.repo.getCurrentAcademicYear(collegeId);
-      if (currentYear) {
-        academicYearData = {
-          id: currentYear.id,
-          name: currentYear.name,
-          startDate: currentYear.start_date,
-          endDate: currentYear.end_date,
-        };
+    if (currentYear) {
+      academicYearData = {
+        id: currentYear.id,
+        name: currentYear.name,
+        startDate: currentYear.start_date,
+        endDate: currentYear.end_date,
+      };
 
-        const currentSem = currentYear.semesters[0];
-        if (currentSem) {
-          semesterData = {
-            id: currentSem.id,
-            termNumber: currentSem.term_number,
-            startDate: currentSem.start_date,
-            endDate: currentSem.end_date,
-          };
-        }
+      const currentSem = currentYear.semesters[0];
+      if (currentSem) {
+        semesterData = {
+          id: currentSem.id,
+          termNumber: currentSem.term_number,
+          startDate: currentSem.start_date,
+          endDate: currentSem.end_date,
+        };
       }
     }
 
-    return {
+    const result: FacultyDashboardResponse = {
       faculty: {
         uid: authedUser.uid,
         name:
@@ -101,18 +110,28 @@ export class FacultyService {
       academicYear: academicYearData,
       semester: semesterData,
     };
+
+    memoryCache.set(cacheKey, result, 60);
+    return result;
   }
 
   async getProfile(uid: string): Promise<FacultyProfile> {
-    const authedUser = await this.repo.getAuthedUser(uid);
+    const cacheKey = `profile:${uid}`;
+    const cached = memoryCache.get<FacultyProfile>(cacheKey);
+    if (cached) return cached;
+
+    const [authedUser, userProfile] = await Promise.all([
+      this.repo.getAuthedUser(uid),
+      this.repo.getFacultyUserProfile(uid),
+    ]);
+
     if (!authedUser) {
       throw new Error('Faculty user record not found');
     }
 
-    const userProfile = await this.repo.getFacultyUserProfile(uid);
     const profile = userProfile?.profiles;
 
-    return {
+    const result: FacultyProfile = {
       id: userProfile?.id || authedUser.uid,
       uid: authedUser.uid,
       firstName: profile?.firstName || null,
@@ -131,17 +150,26 @@ export class FacultyService {
       profilePhoto: profile?.profilePhotoUrl || authedUser.photo_url || null,
       accountStatus: authedUser.approval_status || 'ACTIVE',
     };
+
+    memoryCache.set(cacheKey, result, 60);
+    return result;
   }
 
   async updateProfile(uid: string, input: FacultyProfileUpdateInput): Promise<FacultyProfile> {
     await this.repo.updateFacultyProfile(uid, input);
+    memoryCache.del(`profile:${uid}`);
+    memoryCache.del(`dashboard:${uid}`);
     return this.getProfile(uid);
   }
 
   async getAssignedClasses(facultyUid: string): Promise<FacultyClassSummary[]> {
+    const cacheKey = `classes:${facultyUid}`;
+    const cached = memoryCache.get<FacultyClassSummary[]>(cacheKey);
+    if (cached) return cached;
+
     const classes = await this.repo.getAssignedClasses(facultyUid);
 
-    return classes.map((c) => ({
+    const result = classes.map((c) => ({
       id: c.id,
       name: c.name,
       batch: c.batch ? `${c.batch.start_year}-${c.batch.end_year}` : null,
@@ -155,6 +183,9 @@ export class FacultyService {
       },
       studentCount: c._count.students,
     }));
+
+    memoryCache.set(cacheKey, result, 60);
+    return result;
   }
 
   async getClassDetails(classId: string, facultyUid: string): Promise<FacultyClassSummary> {
@@ -250,19 +281,23 @@ export class FacultyService {
   }
 
   async getDepartment(departmentId: string): Promise<DepartmentInfo> {
+    const cacheKey = `department:${departmentId}`;
+    const cached = memoryCache.get<DepartmentInfo>(cacheKey);
+    if (cached) return cached;
+
     const dept = await this.repo.getDepartmentById(departmentId);
 
     if (!dept) {
       throw { status: 404, message: 'Department not found' };
     }
 
-    return {
+    const result: DepartmentInfo = {
       id: dept.id,
       name: dept.name,
       code: dept.code,
       collegeName: dept.college?.name || null,
       hodName: dept.authed_users_departments_hod_uidToauthed_users?.display_name || null,
-      programs: (dept.programs || []).map((p: any) => ({
+      programs: dept.programs.map((p: any) => ({
         id: p.id,
         name: p.name,
         type: p.type,
@@ -271,12 +306,19 @@ export class FacultyService {
       subjectsCount: dept._count.subjects,
       status: dept.is_active ? 'ACTIVE' : 'INACTIVE',
     };
+
+    memoryCache.set(cacheKey, result, 120);
+    return result;
   }
 
   async getSubjects(departmentId: string, semesterNumber?: number): Promise<SubjectInfo[]> {
+    const cacheKey = `subjects:${departmentId}:${semesterNumber || 'all'}`;
+    const cached = memoryCache.get<SubjectInfo[]>(cacheKey);
+    if (cached) return cached;
+
     const subjects = await this.repo.getDepartmentSubjects(departmentId, semesterNumber);
 
-    return subjects.map((s) => ({
+    const result = subjects.map((s) => ({
       id: s.id,
       name: s.name,
       code: s.code,
@@ -285,12 +327,19 @@ export class FacultyService {
       isActive: s.is_active ?? true,
       departmentId: s.department_id,
     }));
+
+    memoryCache.set(cacheKey, result, 120);
+    return result;
   }
 
   async getAcademicYears(collegeId: string): Promise<AcademicYearInfo[]> {
+    const cacheKey = `academicYears:${collegeId}`;
+    const cached = memoryCache.get<AcademicYearInfo[]>(cacheKey);
+    if (cached) return cached;
+
     const years = await this.repo.getAcademicYears(collegeId);
 
-    return years.map((y) => ({
+    const result = years.map((y) => ({
       id: y.id,
       name: y.name,
       startDate: y.start_date,
@@ -298,12 +347,19 @@ export class FacultyService {
       isCurrent: y.is_current ?? false,
       status: 'ACTIVE',
     }));
+
+    memoryCache.set(cacheKey, result, 300);
+    return result;
   }
 
   async getSemesters(collegeId: string): Promise<SemesterInfo[]> {
+    const cacheKey = `semesters:${collegeId}`;
+    const cached = memoryCache.get<SemesterInfo[]>(cacheKey);
+    if (cached) return cached;
+
     const semesters = await this.repo.getSemesters(collegeId);
 
-    return semesters.map((s) => ({
+    const result = semesters.map((s) => ({
       id: s.id,
       academicYearId: s.academic_year_id,
       academicYearName: s.academic_year.name,
@@ -312,6 +368,9 @@ export class FacultyService {
       endDate: s.end_date,
       isCurrent: false,
     }));
+
+    memoryCache.set(cacheKey, result, 300);
+    return result;
   }
 
   async search(uid: string, query: string): Promise<FacultySearchResults> {
@@ -323,16 +382,30 @@ export class FacultyService {
   }
 
   async saveAttendanceSession(facultyUid: string, input: MarkAttendanceSessionInput) {
-    return this.repo.saveAttendanceSession(facultyUid, input);
+    const result = await this.repo.saveAttendanceSession(facultyUid, input);
+    // Invalidate attendance stats & history cache for this class
+    memoryCache.del(`attendance:stats:${input.classId}`);
+    memoryCache.del(`attendance:history:${input.classId}`);
+    return result;
   }
 
   async getClassAttendanceStats(classId: string): Promise<ClassAttendanceStatsResponse> {
-    return this.repo.getClassAttendanceStats(classId);
+    const cacheKey = `attendance:stats:${classId}`;
+    const cached = memoryCache.get<ClassAttendanceStatsResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.repo.getClassAttendanceStats(classId);
+    memoryCache.set(cacheKey, result, 30);
+    return result;
   }
 
   async getClassAttendanceHistory(classId: string): Promise<AttendanceSessionSummary[]> {
-    return this.repo.getClassAttendanceHistory(classId);
+    const cacheKey = `attendance:history:${classId}`;
+    const cached = memoryCache.get<AttendanceSessionSummary[]>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.repo.getClassAttendanceHistory(classId);
+    memoryCache.set(cacheKey, result, 30);
+    return result;
   }
 }
-
-

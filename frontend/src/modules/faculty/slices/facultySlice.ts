@@ -176,7 +176,9 @@ export const facultySlice = createSlice({
     // Dashboard
     builder
       .addCase(fetchFacultyDashboard.pending, (state) => {
-        state.loading.dashboard = true;
+        if (!state.dashboard) {
+          state.loading.dashboard = true;
+        }
         state.error = null;
       })
       .addCase(fetchFacultyDashboard.fulfilled, (state, action) => {
@@ -191,7 +193,9 @@ export const facultySlice = createSlice({
     // Profile
     builder
       .addCase(fetchFacultyProfile.pending, (state) => {
-        state.loading.profile = true;
+        if (!state.profile) {
+          state.loading.profile = true;
+        }
       })
       .addCase(fetchFacultyProfile.fulfilled, (state, action) => {
         state.loading.profile = false;
@@ -224,7 +228,9 @@ export const facultySlice = createSlice({
     // Classes
     builder
       .addCase(fetchAssignedClasses.pending, (state) => {
-        state.loading.classes = true;
+        if (state.classes.length === 0) {
+          state.loading.classes = true;
+        }
       })
       .addCase(fetchAssignedClasses.fulfilled, (state, action) => {
         state.loading.classes = false;
@@ -244,7 +250,9 @@ export const facultySlice = createSlice({
     // Class Students
     builder
       .addCase(fetchClassStudents.pending, (state) => {
-        state.loading.students = true;
+        if (state.classStudents.length === 0) {
+          state.loading.students = true;
+        }
       })
       .addCase(fetchClassStudents.fulfilled, (state, action) => {
         state.loading.students = false;
@@ -258,7 +266,9 @@ export const facultySlice = createSlice({
     // Department
     builder
       .addCase(fetchDepartment.pending, (state) => {
-        state.loading.department = true;
+        if (!state.department) {
+          state.loading.department = true;
+        }
       })
       .addCase(fetchDepartment.fulfilled, (state, action) => {
         state.loading.department = false;
@@ -272,7 +282,9 @@ export const facultySlice = createSlice({
     // Subjects
     builder
       .addCase(fetchSubjects.pending, (state) => {
-        state.loading.subjects = true;
+        if (state.subjects.length === 0) {
+          state.loading.subjects = true;
+        }
       })
       .addCase(fetchSubjects.fulfilled, (state, action) => {
         state.loading.subjects = false;
@@ -286,7 +298,9 @@ export const facultySlice = createSlice({
     // Academic Info
     builder
       .addCase(fetchAcademicInfo.pending, (state) => {
-        state.loading.academic = true;
+        if (state.academicYears.length === 0) {
+          state.loading.academic = true;
+        }
       })
       .addCase(fetchAcademicInfo.fulfilled, (state, action) => {
         state.loading.academic = false;

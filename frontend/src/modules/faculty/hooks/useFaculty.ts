@@ -20,15 +20,35 @@ export const useFaculty = () => {
 
   return {
     ...facultyState,
-    loadDashboard: () => dispatch(fetchFacultyDashboard()),
-    loadProfile: () => dispatch(fetchFacultyProfile()),
+    loadDashboard: (force: boolean = false) => {
+      if (force || !facultyState.dashboard) {
+        dispatch(fetchFacultyDashboard());
+      }
+    },
+    loadProfile: (force: boolean = false) => {
+      if (force || !facultyState.profile) {
+        dispatch(fetchFacultyProfile());
+      }
+    },
     saveProfile: (data: FacultyProfileUpdateInput) => dispatch(updateFacultyProfile(data)),
-    loadClasses: () => dispatch(fetchAssignedClasses()),
+    loadClasses: (force: boolean = false) => {
+      if (force || facultyState.classes.length === 0) {
+        dispatch(fetchAssignedClasses());
+      }
+    },
     loadClassDetails: (classId: string) => dispatch(fetchClassDetails(classId)),
     loadClassStudents: (classId: string) => dispatch(fetchClassStudents(classId)),
-    loadDepartment: () => dispatch(fetchDepartment()),
+    loadDepartment: (force: boolean = false) => {
+      if (force || !facultyState.department) {
+        dispatch(fetchDepartment());
+      }
+    },
     loadSubjects: (semester?: number) => dispatch(fetchSubjects(semester)),
-    loadAcademicInfo: () => dispatch(fetchAcademicInfo()),
+    loadAcademicInfo: (force: boolean = false) => {
+      if (force || facultyState.academicYears.length === 0) {
+        dispatch(fetchAcademicInfo());
+      }
+    },
     resetError: () => dispatch(clearError()),
   };
 };
