@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Eye, ArrowUpDown } from 'lucide-react';
+import { Search, Eye, ArrowUpDown, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ClassStudentSummary } from '../types/faculty.types';
 
@@ -22,16 +22,16 @@ export const StudentTable: React.FC<StudentTableProps> = ({ students, loading })
 
   const filtered = students
     .filter((s) => {
-      const q = searchTerm.toLowerCase();
-      return (
-        s.name.toLowerCase().includes(q) ||
-        (s.registerNumber && s.registerNumber.toLowerCase().includes(q)) ||
-        s.email.toLowerCase().includes(q)
-      );
+      const q = searchTerm.trim().toLowerCase();
+      if (!q) return true;
+      const name = (s.name || '').toLowerCase();
+      const reg = (s.registerNumber || '').toLowerCase();
+      const email = (s.email || '').toLowerCase();
+      return name.includes(q) || reg.includes(q) || email.includes(q);
     })
     .sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
       return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
 
@@ -54,8 +54,16 @@ export const StudentTable: React.FC<StudentTableProps> = ({ students, loading })
             placeholder="Search student by name or reg no..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+            className="w-full pl-9 pr-8 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="text-xs text-slate-500 self-end sm:self-auto">

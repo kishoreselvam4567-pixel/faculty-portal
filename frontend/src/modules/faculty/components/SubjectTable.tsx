@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { SubjectInfo } from '../types/faculty.types';
 
 interface SubjectTableProps {
@@ -28,9 +28,11 @@ export const SubjectTable: React.FC<SubjectTableProps> = ({
   const semestersList = Array.from(new Set(subjects.map((s) => s.semesterNumber))).sort((a, b) => a - b);
 
   const filtered = subjects.filter((s) => {
+    const q = search.trim().toLowerCase();
     const matchesSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.code.toLowerCase().includes(search.toLowerCase());
+      !q ||
+      (s.name && s.name.toLowerCase().includes(q)) ||
+      (s.code && s.code.toLowerCase().includes(q));
     const matchesSem = selectedSemester ? s.semesterNumber === selectedSemester : true;
     return matchesSearch && matchesSem;
   });
@@ -54,8 +56,16 @@ export const SubjectTable: React.FC<SubjectTableProps> = ({
             placeholder="Filter courses by code or title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+            className="w-full pl-9 pr-8 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">

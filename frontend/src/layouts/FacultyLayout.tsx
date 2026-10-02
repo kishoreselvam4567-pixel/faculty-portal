@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useFaculty } from '../modules/faculty/hooks/useFaculty';
 import { facultyApi } from '../modules/faculty/api/facultyApi';
+import { GlobalSearchBar } from './GlobalSearchBar';
 
 interface DevUser {
   uid: string;
@@ -200,15 +201,8 @@ export const FacultyLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
         {/* Top Header Bar */}
         <header className="h-16 px-6 lg:px-8 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30">
-          {/* Search Box (Faculty Specific) */}
-          <div className="relative w-full max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search assigned classes, students, subjects, syllabus..."
-              className="w-full pl-9 pr-4 py-1.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 rounded text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            />
-          </div>
+          {/* Global Search Bar (Classes, Students, Subjects, Syllabus, Portals) */}
+          <GlobalSearchBar />
 
           {/* Right Header Status Pill */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold tracking-wider">
