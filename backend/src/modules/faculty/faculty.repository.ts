@@ -593,17 +593,19 @@ export class FacultyRepository {
       console.warn('DB attendance stats query notice:', err);
     }
 
-    for (const [_, cached] of localAttendanceCache.entries()) {
-      if (cached.session.classId === classId) {
-        sessionCount = Math.max(sessionCount, 1);
-        cached.records.forEach((r) => {
-          const cur = studentStatsMap.get(r.studentUid) || { present: 0, absent: 0, late: 0, excused: 0 };
-          if (r.status === 'PRESENT') cur.present++;
-          else if (r.status === 'ABSENT') cur.absent++;
-          else if (r.status === 'LATE') cur.late++;
-          else if (r.status === 'EXCUSED') cur.excused++;
-          studentStatsMap.set(r.studentUid, cur);
-        });
+    if (sessionCount === 0) {
+      for (const [_, cached] of localAttendanceCache.entries()) {
+        if (cached.session.classId === classId) {
+          sessionCount = Math.max(sessionCount, 1);
+          cached.records.forEach((r) => {
+            const cur = studentStatsMap.get(r.studentUid) || { present: 0, absent: 0, late: 0, excused: 0 };
+            if (r.status === 'PRESENT') cur.present++;
+            else if (r.status === 'ABSENT') cur.absent++;
+            else if (r.status === 'LATE') cur.late++;
+            else if (r.status === 'EXCUSED') cur.excused++;
+            studentStatsMap.set(r.studentUid, cur);
+          });
+        }
       }
     }
 
