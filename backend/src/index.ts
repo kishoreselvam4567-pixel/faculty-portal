@@ -4,7 +4,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import facultyRouter from './modules/faculty/faculty.routes';
-import { prisma } from './lib/prisma';
+import { prisma, isDatabaseAvailable, markDatabaseUnavailable } from './lib/prisma';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,26 +19,32 @@ app.use(express.json({ limit: '10mb' }));
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: 'ok', database: 'connected', service: 'Staff Portal Faculty API', timestamp: new Date() });
-  } catch (err: any) {
-    res.json({ status: 'ok', database: 'offline-fallback', error: err.message, service: 'Staff Portal Faculty API', timestamp: new Date() });
+  if (await isDatabaseAvailable()) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return res.json({ status: 'ok', database: 'connected', service: 'Staff Portal Faculty API', timestamp: new Date() });
+    } catch (err: any) {
+      markDatabaseUnavailable();
+      return res.json({ status: 'ok', database: 'offline-fallback', error: err.message, service: 'Staff Portal Faculty API', timestamp: new Date() });
+    }
   }
+  return res.json({ status: 'ok', database: 'offline-fallback', service: 'Staff Portal Faculty API', timestamp: new Date() });
 });
 
 // Helper endpoint: lists available faculty/users in the database
 app.get('/api/auth/users-list', async (req, res) => {
-  try {
-    const users = await prisma.authedUser.findMany({
-      include: {
-        department: true,
-        assigned_classes: true,
-      },
-    });
-    if (users && users.length > 0) return res.json(users);
-  } catch (error: any) {
-    // DB offline fallback
+  if (await isDatabaseAvailable()) {
+    try {
+      const users = await prisma.authedUser.findMany({
+        include: {
+          department: true,
+          assigned_classes: true,
+        },
+      });
+      if (users && users.length > 0) return res.json(users);
+    } catch (error: any) {
+      markDatabaseUnavailable();
+    }
   }
 
   return res.json([

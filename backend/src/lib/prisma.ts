@@ -45,37 +45,39 @@ export async function isDatabaseAvailable(): Promise<boolean> {
     return false;
   }
 
-  // Fast non-blocking socket check with 200ms timeout
+  // Fast non-blocking socket check with 150ms timeout
+  const targetHost = host === 'localhost' ? '127.0.0.1' : host;
   const reachable = await new Promise<boolean>((resolve) => {
     const socket = new net.Socket();
     let settled = false;
-    socket.setTimeout(200);
 
-    socket.once('connect', () => {
-      if (!settled) {
-        settled = true;
-        socket.destroy();
-        resolve(true);
-      }
-    });
-
-    socket.once('timeout', () => {
+    const timer = setTimeout(() => {
       if (!settled) {
         settled = true;
         socket.destroy();
         resolve(false);
+      }
+    }, 150);
+
+    socket.once('connect', () => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        socket.destroy();
+        resolve(true);
       }
     });
 
     socket.once('error', () => {
       if (!settled) {
         settled = true;
+        clearTimeout(timer);
         socket.destroy();
         resolve(false);
       }
     });
 
-    socket.connect(port, host);
+    socket.connect(port, targetHost);
   });
 
   isDbReachable = reachable;

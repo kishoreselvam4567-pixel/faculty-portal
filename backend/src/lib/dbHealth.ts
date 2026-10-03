@@ -39,38 +39,39 @@ export async function isDatabaseOnline(): Promise<boolean> {
     return false;
   }
 
-  // Fast TCP reachability check (max 500ms timeout)
+  // Fast TCP reachability check (max 150ms timeout)
+  const targetHost = parsed.host === 'localhost' ? '127.0.0.1' : parsed.host;
   const isReachable = await new Promise<boolean>((resolve) => {
     const socket = new net.Socket();
     let settled = false;
 
-    socket.setTimeout(500);
-
-    socket.once('connect', () => {
-      if (!settled) {
-        settled = true;
-        socket.destroy();
-        resolve(true);
-      }
-    });
-
-    socket.once('timeout', () => {
+    const timer = setTimeout(() => {
       if (!settled) {
         settled = true;
         socket.destroy();
         resolve(false);
+      }
+    }, 150);
+
+    socket.once('connect', () => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        socket.destroy();
+        resolve(true);
       }
     });
 
     socket.once('error', () => {
       if (!settled) {
         settled = true;
+        clearTimeout(timer);
         socket.destroy();
         resolve(false);
       }
     });
 
-    socket.connect(parsed.port, parsed.host);
+    socket.connect(parsed.port, targetHost);
   });
 
   cachedDbStatus = isReachable;

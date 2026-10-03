@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ClipboardCheck,
@@ -64,6 +64,9 @@ export const FacultyAttendancePage: React.FC = () => {
   const [history, setHistory] = useState<AttendanceSessionSummary[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Client-side cache for instant period/date switching
+  const sessionCacheRef = useRef<Map<string, any>>(new Map());
+
   // Initial Load
   useEffect(() => {
     loadClasses();
@@ -104,7 +107,19 @@ export const FacultyAttendancePage: React.FC = () => {
 
   const loadSession = async () => {
     if (!selectedClassId) return;
-    setLoadingSession(true);
+    const cacheKey = `${selectedClassId}_${selectedDate}_${selectedPeriod}`;
+    const cached = sessionCacheRef.current.get(cacheKey);
+
+    if (cached) {
+      setRecords(cached.records);
+      setSessionRemarks(cached.remarks || '');
+      if (cached.subjectId) {
+        setSelectedSubjectId(cached.subjectId);
+      }
+    } else {
+      setLoadingSession(true);
+    }
+
     setSaveSuccess(false);
     try {
       const data = await facultyApi.getAttendanceSession(
@@ -112,6 +127,7 @@ export const FacultyAttendancePage: React.FC = () => {
         selectedDate,
         selectedPeriod
       );
+      sessionCacheRef.current.set(cacheKey, data);
       setRecords(data.records);
       setSessionRemarks(data.remarks || '');
       if (data.subjectId) {
@@ -188,6 +204,17 @@ export const FacultyAttendancePage: React.FC = () => {
           remarks: r.remarks,
         })),
       });
+
+      const cacheKey = `${selectedClassId}_${selectedDate}_${selectedPeriod}`;
+      sessionCacheRef.current.set(cacheKey, {
+        classId: selectedClassId,
+        subjectId: selectedSubjectId || undefined,
+        date: selectedDate,
+        period: selectedPeriod,
+        remarks: sessionRemarks,
+        records: [...records],
+      });
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err) {

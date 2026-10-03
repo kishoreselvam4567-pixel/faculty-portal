@@ -995,7 +995,7 @@ export class FacultyRepository {
     if (cached) {
       sessionMeta = cached.session;
       cached.records.forEach((r) => recordedMap.set(r.studentUid, { status: r.status, remarks: r.remarks }));
-    } else {
+    } else if (await isDatabaseAvailable()) {
       try {
         const sessions: any = await prisma.$queryRawUnsafe(
           `SELECT s.id, s.class_id, s.faculty_uid, s.subject_id, s.date, s.period, s.remarks, sub.name as subject_name
@@ -1016,6 +1016,7 @@ export class FacultyRepository {
           records.forEach((r: any) => recordedMap.set(r.student_uid, { status: r.status, remarks: r.remarks }));
         }
       } catch (err) {
+        markDatabaseUnavailable();
         console.warn('DB attendance read notice:', err);
       }
     }
@@ -1048,39 +1049,42 @@ export class FacultyRepository {
     const key = `${input.classId}_${input.date}_${input.period}`;
     const subjectIdParam = input.subjectId || null;
 
-    try {
-      const sessionResult: any = await prisma.$queryRawUnsafe(
-        `INSERT INTO attendance_sessions (class_id, faculty_uid, subject_id, date, period, remarks, updated_at)
-         VALUES ($1::uuid, $2, $3::uuid, $4::date, $5, $6, NOW())
-         ON CONFLICT (class_id, date, period)
-         DO UPDATE SET subject_id = EXCLUDED.subject_id, remarks = EXCLUDED.remarks, updated_at = NOW()
-         RETURNING id;`,
-        input.classId,
-        facultyUid,
-        subjectIdParam,
-        input.date,
-        input.period,
-        input.remarks || null
-      );
+    if (await isDatabaseAvailable()) {
+      try {
+        const sessionResult: any = await prisma.$queryRawUnsafe(
+          `INSERT INTO attendance_sessions (class_id, faculty_uid, subject_id, date, period, remarks, updated_at)
+           VALUES ($1::uuid, $2, $3::uuid, $4::date, $5, $6, NOW())
+           ON CONFLICT (class_id, date, period)
+           DO UPDATE SET subject_id = EXCLUDED.subject_id, remarks = EXCLUDED.remarks, updated_at = NOW()
+           RETURNING id;`,
+          input.classId,
+          facultyUid,
+          subjectIdParam,
+          input.date,
+          input.period,
+          input.remarks || null
+        );
 
-      const sessionId = sessionResult[0]?.id;
+        const sessionId = sessionResult[0]?.id;
 
-      if (sessionId) {
-        for (const rec of input.records) {
-          await prisma.$queryRawUnsafe(
-            `INSERT INTO attendance_records (attendance_session_id, student_uid, status, remarks)
-             VALUES ($1::uuid, $2, $3::"AttendanceStatus", $4)
-             ON CONFLICT (attendance_session_id, student_uid)
-             DO UPDATE SET status = EXCLUDED.status, remarks = EXCLUDED.remarks;`,
-            sessionId,
-            rec.studentUid,
-            rec.status,
-            rec.remarks || null
-          );
+        if (sessionId) {
+          for (const rec of input.records) {
+            await prisma.$queryRawUnsafe(
+              `INSERT INTO attendance_records (attendance_session_id, student_uid, status, remarks)
+               VALUES ($1::uuid, $2, $3::"AttendanceStatus", $4)
+               ON CONFLICT (attendance_session_id, student_uid)
+               DO UPDATE SET status = EXCLUDED.status, remarks = EXCLUDED.remarks;`,
+              sessionId,
+              rec.studentUid,
+              rec.status,
+              rec.remarks || null
+            );
+          }
         }
+      } catch (err) {
+        markDatabaseUnavailable();
+        console.warn('DB attendance write notice, recorded in persistent cache:', err);
       }
-    } catch (err) {
-      console.warn('DB attendance write notice, recorded in persistent cache:', err);
     }
 
     localAttendanceCache.set(key, {
@@ -1112,31 +1116,34 @@ export class FacultyRepository {
     const studentStatsMap = new Map<string, { present: number; absent: number; late: number; excused: number }>();
     students.forEach((s) => studentStatsMap.set(s.uid, { present: 0, absent: 0, late: 0, excused: 0 }));
 
-    try {
-      const records: any = await prisma.$queryRawUnsafe(
-        `SELECT ar.student_uid, ar.status
-         FROM attendance_records ar
-         JOIN attendance_sessions s ON ar.attendance_session_id = s.id
-         WHERE s.class_id = $1::uuid;`,
-        classId
-      );
+    if (await isDatabaseAvailable()) {
+      try {
+        const records: any = await prisma.$queryRawUnsafe(
+          `SELECT ar.student_uid, ar.status
+           FROM attendance_records ar
+           JOIN attendance_sessions s ON ar.attendance_session_id = s.id
+           WHERE s.class_id = $1::uuid;`,
+          classId
+        );
 
-      const sessionCountRes: any = await prisma.$queryRawUnsafe(
-        `SELECT COUNT(id)::int as count FROM attendance_sessions WHERE class_id = $1::uuid;`,
-        classId
-      );
-      sessionCount = sessionCountRes[0]?.count || 0;
+        const sessionCountRes: any = await prisma.$queryRawUnsafe(
+          `SELECT COUNT(id)::int as count FROM attendance_sessions WHERE class_id = $1::uuid;`,
+          classId
+        );
+        sessionCount = sessionCountRes[0]?.count || 0;
 
-      records.forEach((r: any) => {
-        const cur = studentStatsMap.get(r.student_uid) || { present: 0, absent: 0, late: 0, excused: 0 };
-        if (r.status === 'PRESENT') cur.present++;
-        else if (r.status === 'ABSENT') cur.absent++;
-        else if (r.status === 'LATE') cur.late++;
-        else if (r.status === 'EXCUSED') cur.excused++;
-        studentStatsMap.set(r.student_uid, cur);
-      });
-    } catch (err) {
-      console.warn('DB attendance stats query notice:', err);
+        records.forEach((r: any) => {
+          const cur = studentStatsMap.get(r.student_uid) || { present: 0, absent: 0, late: 0, excused: 0 };
+          if (r.status === 'PRESENT') cur.present++;
+          else if (r.status === 'ABSENT') cur.absent++;
+          else if (r.status === 'LATE') cur.late++;
+          else if (r.status === 'EXCUSED') cur.excused++;
+          studentStatsMap.set(r.student_uid, cur);
+        });
+      } catch (err) {
+        markDatabaseUnavailable();
+        console.warn('DB attendance stats query notice:', err);
+      }
     }
 
     if (sessionCount === 0) {
@@ -1194,48 +1201,51 @@ export class FacultyRepository {
   async getClassAttendanceHistory(classId: string): Promise<AttendanceSessionSummary[]> {
     let list: AttendanceSessionSummary[] = [];
 
-    try {
-      const sessions: any = await prisma.$queryRawUnsafe(
-        `SELECT s.id, s.class_id, s.date, s.period, s.remarks, s.created_at,
-                c.name as class_name, sub.name as subject_name,
-                COUNT(ar.id)::int as total_students,
-                COUNT(CASE WHEN ar.status = 'PRESENT' THEN 1 END)::int as present_count,
-                COUNT(CASE WHEN ar.status = 'ABSENT' THEN 1 END)::int as absent_count,
-                COUNT(CASE WHEN ar.status = 'LATE' THEN 1 END)::int as late_count,
-                COUNT(CASE WHEN ar.status = 'EXCUSED' THEN 1 END)::int as excused_count
-         FROM attendance_sessions s
-         JOIN classes c ON s.class_id = c.id
-         LEFT JOIN subjects sub ON s.subject_id = sub.id
-         LEFT JOIN attendance_records ar ON s.id = ar.attendance_session_id
-         WHERE s.class_id = $1::uuid
-         GROUP BY s.id, s.class_id, s.date, s.period, s.remarks, s.created_at, c.name, sub.name
-         ORDER BY s.date DESC, s.created_at DESC LIMIT 30;`,
-        classId
-      );
+    if (await isDatabaseAvailable()) {
+      try {
+        const sessions: any = await prisma.$queryRawUnsafe(
+          `SELECT s.id, s.class_id, s.date, s.period, s.remarks, s.created_at,
+                  c.name as class_name, sub.name as subject_name,
+                  COUNT(ar.id)::int as total_students,
+                  COUNT(CASE WHEN ar.status = 'PRESENT' THEN 1 END)::int as present_count,
+                  COUNT(CASE WHEN ar.status = 'ABSENT' THEN 1 END)::int as absent_count,
+                  COUNT(CASE WHEN ar.status = 'LATE' THEN 1 END)::int as late_count,
+                  COUNT(CASE WHEN ar.status = 'EXCUSED' THEN 1 END)::int as excused_count
+           FROM attendance_sessions s
+           JOIN classes c ON s.class_id = c.id
+           LEFT JOIN subjects sub ON s.subject_id = sub.id
+           LEFT JOIN attendance_records ar ON s.id = ar.attendance_session_id
+           WHERE s.class_id = $1::uuid
+           GROUP BY s.id, s.class_id, s.date, s.period, s.remarks, s.created_at, c.name, sub.name
+           ORDER BY s.date DESC, s.created_at DESC LIMIT 30;`,
+          classId
+        );
 
-      list = sessions.map((s: any) => {
-        const total = s.total_students || 0;
-        const present = (s.present_count || 0) + (s.late_count || 0) + (s.excused_count || 0);
-        return {
-          id: s.id,
-          classId: s.class_id,
-          className: s.class_name,
-          subjectId: null,
-          subjectName: s.subject_name || null,
-          date: s.date ? new Date(s.date).toISOString().split('T')[0] : '',
-          period: s.period,
-          remarks: s.remarks,
-          totalStudents: total,
-          presentCount: s.present_count || 0,
-          absentCount: s.absent_count || 0,
-          lateCount: s.late_count || 0,
-          excusedCount: s.excused_count || 0,
-          attendancePercentage: total > 0 ? Math.round((present / total) * 100) : 100,
-          createdAt: s.created_at ? new Date(s.created_at).toISOString() : new Date().toISOString(),
-        };
-      });
-    } catch (err) {
-      console.warn('DB attendance history query notice:', err);
+        list = sessions.map((s: any) => {
+          const total = s.total_students || 0;
+          const present = (s.present_count || 0) + (s.late_count || 0) + (s.excused_count || 0);
+          return {
+            id: s.id,
+            classId: s.class_id,
+            className: s.class_name,
+            subjectId: null,
+            subjectName: s.subject_name || null,
+            date: s.date ? new Date(s.date).toISOString().split('T')[0] : '',
+            period: s.period,
+            remarks: s.remarks,
+            totalStudents: total,
+            presentCount: s.present_count || 0,
+            absentCount: s.absent_count || 0,
+            lateCount: s.late_count || 0,
+            excusedCount: s.excused_count || 0,
+            attendancePercentage: total > 0 ? Math.round((present / total) * 100) : 100,
+            createdAt: s.created_at ? new Date(s.created_at).toISOString() : new Date().toISOString(),
+          };
+        });
+      } catch (err) {
+        markDatabaseUnavailable();
+        console.warn('DB attendance history query notice:', err);
+      }
     }
 
     for (const [_, cached] of localAttendanceCache.entries()) {
