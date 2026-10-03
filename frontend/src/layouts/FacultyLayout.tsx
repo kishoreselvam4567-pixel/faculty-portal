@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   RefreshCw,
+  Clock,
 } from 'lucide-react';
 import { useFaculty } from '../modules/faculty/hooks/useFaculty';
 import { facultyApi } from '../modules/faculty/api/facultyApi';
@@ -49,6 +50,7 @@ export const FacultyLayout: React.FC = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { label: 'Daily Reminders', path: '/reminders', icon: Clock },
     { label: 'My Assigned Class', path: '/classes', icon: GraduationCap },
     { label: 'Attendance', path: '/attendance', icon: ClipboardCheck },
     { label: 'My Profile', path: '/profile', icon: User },

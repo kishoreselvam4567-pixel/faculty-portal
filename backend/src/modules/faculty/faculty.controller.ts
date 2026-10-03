@@ -231,6 +231,21 @@ export class FacultyController {
       res.status(error.status || 500).json({ error: error.message || 'Failed to fetch attendance history' });
     }
   };
+
+  getTodayReminders = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const uid = req.user?.uid;
+      if (!uid) {
+        res.status(401).json({ error: 'Unauthorized: missing user context' });
+        return;
+      }
+      const reminders = await this.service.getTodayReminders(uid);
+      res.json(reminders);
+    } catch (error: any) {
+      console.error('getTodayReminders error:', error);
+      res.status(error.status || 500).json({ error: error.message || 'Failed to fetch daily reminders' });
+    }
+  };
 }
 
 

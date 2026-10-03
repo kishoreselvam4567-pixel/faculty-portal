@@ -14,8 +14,8 @@ export const semesterQuerySchema = z.object({
 });
 
 export const markAttendanceSchema = z.object({
-  classId: z.string().uuid(),
-  subjectId: z.string().uuid().optional().nullable(),
+  classId: z.string().min(1),
+  subjectId: z.string().min(1).optional().nullable(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be formatted as YYYY-MM-DD'),
   period: z.string().min(1).max(50),
   remarks: z.string().max(255).optional().nullable(),

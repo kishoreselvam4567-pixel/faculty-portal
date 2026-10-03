@@ -6,6 +6,8 @@ import {
   AttendanceSessionSummary,
   ClassAttendanceStatsResponse,
   AttendanceStatusType,
+  TodayClassReminder,
+  TodayRemindersSummary,
 } from './faculty.types';
 
 // In-memory cache for attendance sessions
@@ -1277,6 +1279,101 @@ export class FacultyRepository {
     }
 
     return list;
+  }
+
+  async getTodayReminders(facultyUid: string, targetDate?: string): Promise<TodayRemindersSummary> {
+    const today = targetDate || new Date().toISOString().split('T')[0];
+    const assignedClasses = await this.getAssignedClasses(facultyUid);
+
+    const todayObj = new Date();
+    const dateFormatted = todayObj.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+    const classReminders: TodayClassReminder[] = [];
+    let pendingAttendanceCount = 0;
+    let pendingMarksCount = 0;
+
+    for (const cls of assignedClasses) {
+      const classId = cls.id;
+      const period = 'Period 1';
+      const key = `${classId}_${today}_${period}`;
+
+      let isMarked = false;
+      let lastMarkedAt: string | null = null;
+
+      // Check in-memory persistent cache
+      const cached = localAttendanceCache.get(key);
+      if (cached) {
+        isMarked = true;
+        lastMarkedAt = cached.session.updatedAt || new Date().toISOString();
+      } else if (await isDatabaseAvailable()) {
+        try {
+          const sessions: any = await prisma.$queryRawUnsafe(
+            `SELECT id, updated_at FROM attendance_sessions
+             WHERE class_id = $1::uuid AND date = $2::date AND period = $3 LIMIT 1;`,
+            classId,
+            today,
+            period
+          );
+          if (sessions && sessions.length > 0) {
+            isMarked = true;
+            lastMarkedAt = sessions[0].updated_at ? new Date(sessions[0].updated_at).toISOString() : null;
+          }
+        } catch (err) {
+          markDatabaseUnavailable();
+        }
+      }
+
+      if (!isMarked) {
+        pendingAttendanceCount++;
+      }
+
+      const sem = cls.current_semester || 1;
+      const marksPending = true;
+      if (marksPending) {
+        pendingMarksCount++;
+      }
+
+      classReminders.push({
+        classId,
+        className: cls.name,
+        semester: cls.current_semester,
+        batch: cls.batch ? `${cls.batch.start_year}-${cls.batch.end_year}` : null,
+        program: cls.batch?.program?.name || null,
+        studentCount: cls._count?.students || 0,
+        isClassIncharge: cls.faculty_uid === facultyUid,
+        todayDate: today,
+        attendance: {
+          status: isMarked ? 'COMPLETED' : 'PENDING',
+          period,
+          lastMarkedAt,
+          totalEnrolled: cls._count?.students || 0,
+        },
+        marks: {
+          status: marksPending ? 'PENDING' : 'UP_TO_DATE',
+          title: `Semester ${sem} Continuous Assessment (CIA)`,
+          deadline: 'Active Term',
+        },
+        actions: {
+          attendanceUrl: `/attendance?classId=${classId}`,
+          classDetailsUrl: `/classes/${classId}`,
+          studentsUrl: `/classes/${classId}/students`,
+        },
+      });
+    }
+
+    return {
+      date: dateFormatted,
+      dateIso: today,
+      totalClassesToday: classReminders.length,
+      pendingAttendanceCount,
+      pendingMarksCount,
+      classes: classReminders,
+    };
   }
 }
 

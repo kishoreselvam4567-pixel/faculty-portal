@@ -19,6 +19,7 @@ router.use(requireFaculty);
 
 // Dashboard & Search
 router.get('/dashboard', controller.getDashboard);
+router.get('/today-reminders', controller.getTodayReminders);
 router.get('/search', controller.search);
 
 // Profile

@@ -15,6 +15,7 @@ import {
   MarkAttendanceSessionInput,
   AttendanceSessionSummary,
   ClassAttendanceStatsResponse,
+  TodayRemindersSummary,
 } from '../types/faculty.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -131,6 +132,12 @@ export const facultyApi = {
 
   getClassAttendanceHistory: async (classId: string): Promise<AttendanceSessionSummary[]> => {
     const res = await api.get<AttendanceSessionSummary[]>(`/faculty/attendance/history/${classId}`);
+    return res.data;
+  },
+
+  // Today's Reminders
+  getTodayReminders: async (): Promise<TodayRemindersSummary> => {
+    const res = await api.get<TodayRemindersSummary>('/faculty/today-reminders');
     return res.data;
   },
 

@@ -36,6 +36,9 @@ const FacultyAcademicYearsPage = lazy(() =>
 const FacultyAttendancePage = lazy(() =>
   import('./modules/faculty/pages/FacultyAttendancePage').then((m) => ({ default: m.FacultyAttendancePage }))
 );
+const FacultyRemindersPage = lazy(() =>
+  import('./modules/faculty/pages/FacultyRemindersPage').then((m) => ({ default: m.FacultyRemindersPage }))
+);
 
 export const App: React.FC = () => {
   return (
@@ -45,6 +48,7 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<FacultyLayout />}>
               <Route index element={<FacultyDashboard />} />
+              <Route path="reminders" element={<FacultyRemindersPage />} />
               <Route path="profile" element={<FacultyProfilePage />} />
               <Route path="department" element={<FacultyDepartmentPage />} />
               <Route path="classes" element={<FacultyClassesPage />} />

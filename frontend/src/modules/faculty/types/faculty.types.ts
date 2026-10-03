@@ -251,4 +251,41 @@ export interface ClassAttendanceStatsResponse {
   students: StudentAttendanceStat[];
 }
 
+export interface TodayClassReminder {
+  classId: string;
+  className: string;
+  semester: number | null;
+  batch: string | null;
+  program: string | null;
+  studentCount: number;
+  isClassIncharge: boolean;
+  todayDate: string;
+  attendance: {
+    status: 'PENDING' | 'COMPLETED';
+    period: string;
+    lastMarkedAt: string | null;
+    totalEnrolled: number;
+  };
+  marks: {
+    status: 'PENDING' | 'UP_TO_DATE';
+    title: string;
+    deadline: string | null;
+  };
+  actions: {
+    attendanceUrl: string;
+    classDetailsUrl: string;
+    studentsUrl: string;
+  };
+}
+
+export interface TodayRemindersSummary {
+  date: string;
+  dateIso: string;
+  totalClassesToday: number;
+  pendingAttendanceCount: number;
+  pendingMarksCount: number;
+  classes: TodayClassReminder[];
+}
+
+
 

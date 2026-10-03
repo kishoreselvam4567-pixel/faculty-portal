@@ -16,6 +16,7 @@ import {
   AttendanceSessionDetail,
   AttendanceSessionSummary,
   ClassAttendanceStatsResponse,
+  TodayRemindersSummary,
 } from './faculty.types';
 
 export class FacultyService {
@@ -407,5 +408,9 @@ export class FacultyService {
     const result = await this.repo.getClassAttendanceHistory(classId);
     memoryCache.set(cacheKey, result, 30);
     return result;
+  }
+
+  async getTodayReminders(facultyUid: string): Promise<TodayRemindersSummary> {
+    return this.repo.getTodayReminders(facultyUid);
   }
 }
