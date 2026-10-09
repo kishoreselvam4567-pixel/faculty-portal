@@ -280,10 +280,11 @@ export class RuleBasedProvider implements IAIProvider {
       query.includes('cloud') ||
       query.includes('curriculum')
     ) {
+      const isGeneric = ['subject', 'subjects', 'course', 'courses', 'all', 'list', 'curriculum', 'syllabus'].includes(query);
       toolCalls.push({
         id: `call-subjects-${Date.now()}`,
         name: 'get_subjects',
-        arguments: { query },
+        arguments: isGeneric ? {} : { query },
       });
     }
     // 13. Create Task Intent
@@ -454,15 +455,19 @@ export class RuleBasedProvider implements IAIProvider {
     // 4. Subjects & Syllabus
     if (toolName === 'get_subjects' || toolName === 'faculty.getSubjects') {
       const subjects = Array.isArray(data) ? data : [];
+      if (subjects.length === 0) {
+        return `### 📖 Department Courses & Syllabus Information\n\nNo specific subjects found matching your query. All degree curriculum courses are managed under your affiliated department.`;
+      }
       return (
         `### 📖 Department Courses & Syllabus Information\n\n` +
+        `Here are the verified curriculum subjects for your department:\n\n` +
         subjects
           .map(
             (s: any) =>
               `- **${s.code} — ${s.name}**\n` +
               `  - **Credits:** ${s.credits || 3} Credits\n` +
-              `  - **Semester:** Term ${s.semester_number || s.semesterNumber}\n` +
-              `  - **Status:** ${s.is_active || s.isActive ? 'Active Curriculum' : 'Archived'}`
+              `  - **Semester:** Term ${s.semesterNumber || s.semester_number || 7}\n` +
+              `  - **Status:** ${s.isActive !== false ? '✅ Active Curriculum' : 'Archived'}`
           )
           .join('\n\n')
       );

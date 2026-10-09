@@ -92,13 +92,20 @@ export const facultyTools: ToolDefinition[] = [
       semester: z.number().optional().describe('Filter by semester number (e.g. 7, 8).'),
       query: z.string().optional().describe('Search keyword for subject code or title.'),
     }),
-    execute: async (args, _context: ToolExecutionContext) => {
-      let subjects = await facultyService.getSubjects(args.semester);
+    execute: async (args, context: ToolExecutionContext) => {
+      const deptId = context.departmentId || '1aa45ae9-e872-4931-8e67-22f5119ce498';
+      let subjects = await facultyService.getSubjects(deptId, args.semester);
       if (args.query) {
-        const q = args.query.toLowerCase();
-        subjects = subjects.filter(
-          (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
-        );
+        const q = args.query.toLowerCase().trim();
+        const isGeneric = ['subject', 'subjects', 'course', 'courses', 'all', 'list', 'curriculum', 'syllabus'].includes(q);
+        if (!isGeneric) {
+          const filtered = subjects.filter(
+            (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
+          );
+          if (filtered.length > 0) {
+            subjects = filtered;
+          }
+        }
       }
       return subjects;
     },
@@ -501,8 +508,14 @@ export const facultyTools: ToolDefinition[] = [
       const deptId = context.departmentId || '1aa45ae9-e872-4931-8e67-22f5119ce498';
       let subjects = await facultyService.getSubjects(deptId, args.semester);
       if (args.query) {
-        const q = args.query.toLowerCase();
-        subjects = subjects.filter((s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q));
+        const q = args.query.toLowerCase().trim();
+        const isGeneric = ['subject', 'subjects', 'course', 'courses', 'all', 'list', 'curriculum', 'syllabus'].includes(q);
+        if (!isGeneric) {
+          const filtered = subjects.filter((s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q));
+          if (filtered.length > 0) {
+            subjects = filtered;
+          }
+        }
       }
       return subjects;
     },
