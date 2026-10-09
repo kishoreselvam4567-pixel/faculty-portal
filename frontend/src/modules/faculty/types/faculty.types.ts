@@ -285,7 +285,87 @@ export interface TodayRemindersSummary {
   pendingAttendanceCount: number;
   pendingMarksCount: number;
   classes: TodayClassReminder[];
+}export interface KnowledgeSourceCitation {
+  id: string;
+  title: string;
+  documentName: string;
+  category: string;
+  snippet: string;
+  score?: number;
 }
 
+export interface ToolCallExecution {
+  id: string;
+  name: string;
+  displayName: string;
+  args: Record<string, any>;
+  status: 'pending' | 'success' | 'failed' | 'requires_confirmation';
+  result?: any;
+  error?: string;
+  requiresConfirmation?: boolean;
+  confirmationPrompt?: string;
+}
 
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  toolCalls?: ToolCallExecution[];
+  sources?: KnowledgeSourceCitation[];
+  status?: 'sending' | 'streaming' | 'complete' | 'error';
+  error?: string;
+  createdAt: string;
+}
+
+export interface ChatConversationSummary {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+  lastMessageSnippet?: string;
+}
+
+export interface FacultyTaskItem {
+  id: string;
+  facultyUid: string;
+  title: string;
+  description?: string | null;
+  dueDate?: string | null;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  category: 'ACADEMIC' | 'ATTENDANCE' | 'EVALUATION' | 'MEETING' | 'CLASS_INCHARGE' | 'OTHER';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface FacultyEmailDraftItem {
+  id: string;
+  facultyUid: string;
+  recipients: string[];
+  subject: string;
+  body: string;
+  status: 'DRAFT' | 'SENT' | 'DISCARDED';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ChatRequestPayload {
+  message: string;
+  conversationId?: string;
+  actionConfirmation?: {
+    toolName: string;
+    args: Record<string, any>;
+    confirmed: boolean;
+  };
+}
+
+export interface ChatResponsePayload {
+  conversationId: string;
+  message: ChatMessage;
+  sources?: KnowledgeSourceCitation[];
+  toolExecutions?: ToolCallExecution[];
+  requiresConfirmation?: boolean;
+}
 
