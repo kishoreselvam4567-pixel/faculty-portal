@@ -50,4 +50,31 @@ router.post('/attendance/session', controller.saveAttendanceSession);
 router.get('/attendance/stats/:classId', controller.getClassAttendanceStats);
 router.get('/attendance/history/:classId', controller.getClassAttendanceHistory);
 
+// AI Assistant & Chatbot Endpoints
+import { assistantController } from './ai/assistant.controller';
+router.post('/assistant/chat', assistantController.chat);
+router.get('/assistant/conversations', assistantController.getConversations);
+router.post('/assistant/conversations', assistantController.createConversation);
+router.get('/assistant/conversations/:id/messages', assistantController.getConversationMessages);
+router.patch('/assistant/conversations/:id', assistantController.renameConversation);
+router.delete('/assistant/conversations/:id', assistantController.deleteConversation);
+router.get('/assistant/tools', assistantController.getTools);
+
+// Faculty Tasks & Reminders Endpoints
+router.get('/tasks', assistantController.getTasks);
+router.post('/tasks', assistantController.createTask);
+router.patch('/tasks/:id', assistantController.updateTask);
+router.delete('/tasks/:id', assistantController.deleteTask);
+
+// Email Drafts & Sending Endpoints
+router.get('/email/drafts', assistantController.getEmailDrafts);
+router.post('/email/drafts', assistantController.createEmailDraft);
+router.post('/email/send', assistantController.sendEmail);
+
+// Knowledge Base & RAG Search Endpoints
+router.get('/knowledge/search', assistantController.searchKnowledge);
+
+// Notifications Endpoints
+router.get('/notifications', assistantController.getNotifications);
+
 export default router;

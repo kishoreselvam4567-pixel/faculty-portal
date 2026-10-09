@@ -6,6 +6,9 @@ A comprehensive, production-ready Faculty Module for College Learning Management
 
 ## 🌟 Features
 
+- **Faculty AI Assistant & Orchestrator**: Production-grade natural language AI assistant grounded in verified LMS database records, course syllabi, and academic policies.
+- **Faculty Tool Registry**: 13 modular backend tools supporting profile inquiries, class rosters, today's teaching schedules, period attendance analytics, task management, and confirmed email drafts.
+- **RAG Knowledge System**: Vector similarity search with chunking, cosine scoring, and citation grounding over official regulations and course curricula.
 - **Faculty Workspace & Dashboard**: Real-time institutional overview, profile summary, department metrics, and current academic terms.
 - **Class Incharge Management**: Dynamic detection of Class Incharge responsibility derived directly from database class assignments.
 - **Student Roster & Verification**: Authorized access to view and verify student profiles enrolled in assigned classes.
@@ -60,6 +63,15 @@ npm install --prefix frontend
 ```bash
 # Run both Backend (Port 5000) and Frontend (Port 5173) concurrently
 npm run dev
+```
+
+### 5. Run Automated AI Test Suite
+```bash
+# Unit, Integration, and AI Orchestrator tests
+npm --prefix backend test
+
+# Live HTTP API End-to-End tests
+npm --prefix backend run test:live
 ```
 
 ---

@@ -5,14 +5,16 @@ import { aiEngine } from '../ai/aiEngine';
 
 class RAGKnowledgeEngine {
   private documents: Map<string, KnowledgeDocument> = new Map();
-  private initialized = false;
+  private initPromise: Promise<void> | null = null;
 
-  async initialize() {
-    if (this.initialized) return;
-    this.initialized = true;
+  async initialize(): Promise<void> {
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
-    // Seed official institutional knowledge documents
-    const seedDocs: Array<Omit<KnowledgeDocument, 'createdAt' | 'updatedAt'>> = [
+    this.initPromise = (async () => {
+      // Seed official institutional knowledge documents
+      const seedDocs: Array<Omit<KnowledgeDocument, 'createdAt' | 'updatedAt'>> = [
       {
         id: 'doc-syl-cs701',
         title: 'CS701 Cloud Computing & Virtualization Course Syllabus',
@@ -92,6 +94,8 @@ Minimum Passing Criteria: A student must obtain at least 45% in End Semester Exa
         updatedAt: new Date(),
       });
     }
+    })();
+    return this.initPromise;
   }
 
   async indexDocument(doc: KnowledgeDocument) {
@@ -124,9 +128,7 @@ Minimum Passing Criteria: A student must obtain at least 45% in End Semester Exa
   }
 
   async search(query: string, departmentId?: string | null, topK = 4): Promise<RAGSearchResult[]> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.initialize();
 
     const queryEmbedding = await aiEngine.generateEmbeddings(query);
     return vectorStore.search(queryEmbedding, query, topK, departmentId);
