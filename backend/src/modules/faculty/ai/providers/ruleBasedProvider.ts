@@ -195,7 +195,7 @@ export class RuleBasedProvider implements IAIProvider {
       return `Information not found in database records.`;
     }
 
-    if (toolName === 'get_assigned_classes') {
+    if (toolName === 'get_assigned_classes' || toolName === 'faculty.getAssignedClasses') {
       const classes = Array.isArray(data) ? data : [data];
       if (classes.length === 0) {
         return `You currently have no classes assigned in the institutional database.`;
@@ -214,7 +214,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
-    if (toolName === 'get_class_students') {
+    if (toolName === 'get_class_students' || toolName === 'faculty.getClassStudents') {
       const students = Array.isArray(data) ? data : [];
       return (
         `### 👥 Class Student Roster (${students.length} Verified Students)\n\n` +
@@ -224,14 +224,14 @@ export class RuleBasedProvider implements IAIProvider {
           .slice(0, 10)
           .map(
             (s: any) =>
-              `| \`${s.register_number || 'N/A'}\` | **${s.display_name}** | ${s.email} | ${s.approval_status || 'ACTIVE'} |`
+              `| \`${s.register_number || 'N/A'}\` | **${s.display_name || s.name}** | ${s.email} | ${s.approval_status || s.accountStatus || 'ACTIVE'} |`
           )
           .join('\n') +
         (students.length > 10 ? `\n\n*...and ${students.length - 10} more enrolled students.*` : '')
       );
     }
 
-    if (toolName === 'get_today_schedule') {
+    if (toolName === 'get_today_schedule' || toolName === 'faculty.getTimetable' || toolName === 'faculty.getReminders') {
       const pendingCount = (data.pendingAttendanceCount || 0) + (data.pendingMarksCount || 0);
       return (
         `### 🕒 Today's Schedule & Academic Deliverables (${data.date || 'Today'})\n\n` +
@@ -240,14 +240,14 @@ export class RuleBasedProvider implements IAIProvider {
           .map(
             (c: any) =>
               `#### ${c.className}\n` +
-              `- **Period Attendance:** ${c.attendance.status === 'COMPLETED' ? '✅ Completed' : '⏳ **Pending Mark**'}\n` +
-              `- **Deliverables:** ${c.marks.title || 'Curriculum submission'}`
+              `- **Period Attendance:** ${c.attendance?.status === 'COMPLETED' ? '✅ Completed' : '⏳ **Pending Mark**'}\n` +
+              `- **Deliverables:** ${c.marks?.title || 'Curriculum submission'}`
           )
           .join('\n\n')
       );
     }
 
-    if (toolName === 'get_subjects') {
+    if (toolName === 'get_subjects' || toolName === 'faculty.getSubjects') {
       const subjects = Array.isArray(data) ? data : [];
       return (
         `### 📖 Department Courses & Syllabus Information\n\n` +
@@ -256,8 +256,8 @@ export class RuleBasedProvider implements IAIProvider {
             (s: any) =>
               `- **${s.code} — ${s.name}**\n` +
               `  - **Credits:** ${s.credits || 3} Credits\n` +
-              `  - **Semester:** Term ${s.semester_number}\n` +
-              `  - **Status:** ${s.is_active ? 'Active Curriculum' : 'Archived'}`
+              `  - **Semester:** Term ${s.semester_number || s.semesterNumber}\n` +
+              `  - **Status:** ${s.is_active || s.isActive ? 'Active Curriculum' : 'Archived'}`
           )
           .join('\n\n')
       );

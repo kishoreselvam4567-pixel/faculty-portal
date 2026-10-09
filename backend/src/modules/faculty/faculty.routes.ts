@@ -52,6 +52,7 @@ router.get('/attendance/history/:classId', controller.getClassAttendanceHistory)
 
 // AI Assistant & Chatbot Endpoints
 import { assistantController } from './ai/assistant.controller';
+router.post('/chat', assistantController.chat);
 router.post('/assistant/chat', assistantController.chat);
 router.get('/assistant/conversations', assistantController.getConversations);
 router.post('/assistant/conversations', assistantController.createConversation);
