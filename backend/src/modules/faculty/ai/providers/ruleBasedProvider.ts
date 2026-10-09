@@ -27,22 +27,185 @@ export class RuleBasedProvider implements IAIProvider {
       };
     }
 
+    // 1. Friendly Greetings & Overview
+    if (
+      query === 'hi' ||
+      query === 'hello' ||
+      query === 'hey' ||
+      query === 'help' ||
+      query.startsWith('good morning') ||
+      query.startsWith('good afternoon') ||
+      query.startsWith('good evening') ||
+      query.includes('what can you do') ||
+      query.includes('how to use') ||
+      query === 'menu' ||
+      query === 'who are you' ||
+      query === 'what are you'
+    ) {
+      return {
+        content:
+          `### 👋 Hello Professor!\n\n` +
+          `I am your **Faculty & Class Incharge AI Assistant**. I am connected directly to your institutional database, class rosters, attendance records, and academic schedules.\n\n` +
+          `Here is what you can ask me:\n\n` +
+          `- 📊 **Attendance Records:** Ask *"attendance"* or *"attendance shortage"* for overall stats, class percentage, and shortage alerts (<75%).\n` +
+          `- 🕒 **Daily Schedule:** Ask *"today schedule"* or *"pending attendance"* to see today's periods and marking status.\n` +
+          `- 📅 **Exam Dates & Schedule:** Ask *"next exam date"* or *"exam schedule"* for MAT-1, MAT-2, practicals, and university ESE dates.\n` +
+          `- 📝 **Passing Marks & CIA:** Ask *"passing marks"* or *"cia weightage"* to see internal assessment rules and minimum pass criteria.\n` +
+          `- 📚 **Classes & Incharge:** Ask *"my classes"* to view your assigned classes, semesters, and Class Incharge duties.\n` +
+          `- 👥 **Students Roster:** Ask *"show students list"* to inspect enrolled students with register numbers.\n` +
+          `- 🏛️ **Department & HOD:** Ask *"who is Head of Department"* for department details and leadership info.\n` +
+          `- 📖 **Syllabus & Courses:** Ask *"CS701 syllabus"* or *"curriculum"* for course credits, units, and textbooks.\n` +
+          `- ✉️ **Tasks & Notices:** Ask *"create task: [title]"* or *"draft email to students"* to prepare announcements.\n\n` +
+          `*Feel free to ask any question in plain English!*`,
+      };
+    }
+
+    // 2. Courtesy & Acknowledgements
+    if (
+      query === 'thank you' ||
+      query === 'thanks' ||
+      query === 'thx' ||
+      query === 'ok' ||
+      query === 'okay' ||
+      query === 'cool' ||
+      query === 'great' ||
+      query === 'got it' ||
+      query.startsWith('thank you')
+    ) {
+      return {
+        content: `You're very welcome, Professor! Feel free to ask anytime if you need assistance with your classes, student attendance, exams, or departmental deliverables. Have a productive day! 😊`,
+      };
+    }
+
+    // 3. How-to Guides & Procedural Inquiries (Clear, direct, easy-to-understand explanations)
+    if (
+      query.includes('how to mark attendance') ||
+      query.includes('how to take attendance') ||
+      query.includes('steps to mark attendance')
+    ) {
+      return {
+        content:
+          `### 📝 How to Mark Class Attendance\n\n` +
+          `Marking attendance in the Faculty Portal takes less than a minute:\n\n` +
+          `1. **Navigate to Attendance:** Click the **Attendance** tab in the main sidebar.\n` +
+          `2. **Choose Class & Period:** Select your class (*B.Sc AI & ML - III Year Sec A*) and the respective period/date.\n` +
+          `3. **Review Roster:** All students are marked **Present** by default.\n` +
+          `4. **Toggle Absentees:** Click on any absent student to switch them to **Absent**, **Late**, or **Excused**.\n` +
+          `5. **Save:** Click the green **"Save Attendance"** button. The session is committed and stats update immediately.\n\n` +
+          `*Tip: You can also ask me "attendance" anytime to see your class's overall percentage and shortage list!*`,
+      };
+    }
+
+    if (
+      query.includes('how to enter marks') ||
+      query.includes('how to post marks') ||
+      query.includes('how to upload marks')
+    ) {
+      return {
+        content:
+          `### 📊 How to Enter & Upload Student Marks\n\n` +
+          `Follow these steps to submit Continuous Internal Assessment (CIA) marks:\n\n` +
+          `1. **Open Marks Section:** Navigate to **Marks / Evaluation** from the sidebar.\n` +
+          `2. **Select Assessment Type:** Choose the test component (e.g., *MAT-1 [15 Marks]*, *MAT-2 [15 Marks]*, or *Assignments [5 Marks]*).\n` +
+          `3. **Input Scores:** Enter the score for each student against their Register Number.\n` +
+          `4. **Validate:** The system automatically checks that scores do not exceed the maximum allowed marks.\n` +
+          `5. **Submit:** Click **"Submit Assessment"** to lock the marks for departmental review.\n\n` +
+          `*Note: As Class Incharge, remember to finalize CIA marks prior to the End Semester Examination week.*`,
+      };
+    }
+
     const toolCalls: ToolCallRequest[] = [];
 
-    // Examination Dates & Academic Schedule Intent
+    // 4. Attendance Policy & Eligibility Regulations (75% rule, condonation, detention)
     if (
-      query.includes('exam') ||
-      query.includes('test date') ||
-      query.includes('examination') ||
-      query.includes('assessment') ||
-      query.includes('midterm') ||
-      query.includes('cia') ||
+      query.includes('minimum attendance') ||
+      query.includes('attendance rule') ||
+      query.includes('attendance requirement') ||
+      query.includes('attendance policy') ||
+      query.includes('condonation') ||
+      query.includes('detention') ||
+      query.includes('75%') ||
+      (query.includes('attendance') && (
+        query.includes('rule') ||
+        query.includes('policy') ||
+        query.includes('minimum') ||
+        query.includes('min') ||
+        query.includes('eligib') ||
+        query.includes('allow') ||
+        query.includes('allowed') ||
+        query.includes('write exam')
+      ))
+    ) {
+      toolCalls.push({
+        id: `call-att-reg-${Date.now()}`,
+        name: 'search_knowledge_base',
+        arguments: { query: 'minimum attendance percentage condonation 75% examination eligibility regulations' },
+      });
+    }
+    // 5. Passing Marks & Continuous Internal Assessment (CIA) Evaluation Policy
+    else if (
+      query.includes('passing mark') ||
+      query.includes('passing marks') ||
+      query.includes('pass mark') ||
+      query.includes('pass marks') ||
+      query.includes('pass criteria') ||
+      query.includes('how to pass') ||
+      query.includes('cia marks') ||
+      query.includes('internal marks') ||
+      query.includes('cia weightage') ||
+      query.includes('evaluation policy') ||
+      query.includes('grading policy') ||
+      query.includes('assessment weightage')
+    ) {
+      toolCalls.push({
+        id: `call-eval-reg-${Date.now()}`,
+        name: 'search_knowledge_base',
+        arguments: { query: 'continuous internal assessment cia marks evaluation passing criteria 2026' },
+      });
+    }
+    // 6. Attendance Query Intent (Stats, Shortage, Today)
+    else if (
+      query.includes('attendance') ||
+      query.includes('absent') ||
+      query.includes('present') ||
+      query.includes('shortage')
+    ) {
+      if (query.includes('today') || query.includes('period') || query.includes('pending')) {
+        toolCalls.push({
+          id: `call-today-${Date.now()}`,
+          name: 'get_today_schedule',
+          arguments: {},
+        });
+      } else {
+        toolCalls.push({
+          id: `call-att-stats-${Date.now()}`,
+          name: 'query_attendance_summary',
+          arguments: {},
+        });
+      }
+    }
+    // 7. Examination Dates & Academic Schedule Intent
+    else if (
+      query.includes('exam date') ||
+      query.includes('exam dates') ||
+      query.includes('when is exam') ||
+      query.includes('when is the exam') ||
+      query.includes('next exam') ||
+      query.includes('examination date') ||
+      query.includes('midterm date') ||
+      query.includes('cia date') ||
       query.includes('mat-1') ||
       query.includes('mat-2') ||
-      query.includes('ese') ||
-      query.includes('calendar') ||
-      query.includes('term dates') ||
-      query.includes('semester date')
+      query.includes('ese date') ||
+      query.includes('exam schedule') ||
+      query.includes('academic calendar') ||
+      query.includes('term date') ||
+      query.includes('semester date') ||
+      query.includes('last working day') ||
+      query === 'exam' ||
+      query === 'exams' ||
+      query === 'test date' ||
+      query === 'test dates'
     ) {
       toolCalls.push({
         id: `call-exam-schedule-${Date.now()}`,
@@ -50,14 +213,15 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: { query: 'examination schedule dates academic calendar midterm 2026' },
       });
     }
-
-    // Class Incharge & Assigned Classes Intent
-    if (
+    // 8. Class Incharge & Assigned Classes Intent
+    else if (
       query.includes('class incharge') ||
       query.includes('assigned class') ||
       query.includes('my classes') ||
       query.includes('classes assigned') ||
-      query.includes('show classes')
+      query.includes('show classes') ||
+      query.includes('classes') ||
+      query.includes('which class')
     ) {
       toolCalls.push({
         id: `call-classes-${Date.now()}`,
@@ -65,11 +229,13 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: {},
       });
     }
-    // Students / Roster Intent
+    // 9. Students / Roster Intent
     else if (
       query.includes('student') ||
       query.includes('roster') ||
-      query.includes('enrolled')
+      query.includes('enrolled') ||
+      query.includes('roll no') ||
+      query.includes('register number')
     ) {
       toolCalls.push({
         id: `call-students-${Date.now()}`,
@@ -77,13 +243,12 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: {},
       });
     }
-    // Today's Schedule & Attendance Sessions Intent
+    // 10. Today's Schedule & Period Timetable Intent
     else if (
       query.includes('today') ||
       query.includes('schedule') ||
       query.includes('period') ||
-      query.includes('pending attendance') ||
-      query.includes('attendance status')
+      query.includes('timetable')
     ) {
       toolCalls.push({
         id: `call-today-${Date.now()}`,
@@ -91,26 +256,27 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: {},
       });
     }
-    // Attendance Statistics Intent
+    // 11. Head of Department (HOD) & Department Info Intent
     else if (
-      query.includes('attendance summary') ||
-      query.includes('attendance percentage') ||
-      query.includes('shortage') ||
-      query.includes('attendance stats')
+      query.includes('hod') ||
+      query.includes('head of department') ||
+      query.includes('department') ||
+      query.includes('dept')
     ) {
       toolCalls.push({
-        id: `call-att-stats-${Date.now()}`,
-        name: 'query_attendance_summary',
+        id: `call-dept-${Date.now()}`,
+        name: 'faculty.getDepartment',
         arguments: {},
       });
     }
-    // Syllabus & Subjects Intent
+    // 12. Syllabus & Subjects Intent
     else if (
       query.includes('syllabus') ||
       query.includes('subject') ||
       query.includes('credit') ||
       query.includes('course') ||
       query.includes('cs701') ||
+      query.includes('cs702') ||
       query.includes('cloud') ||
       query.includes('curriculum')
     ) {
@@ -120,20 +286,7 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: { query },
       });
     }
-    // Tasks & Reminders Query Intent
-    else if (
-      (query.includes('task') || query.includes('reminder') || query.includes('pending work')) &&
-      !query.startsWith('create') &&
-      !query.startsWith('add') &&
-      !query.startsWith('new')
-    ) {
-      toolCalls.push({
-        id: `call-tasks-${Date.now()}`,
-        name: 'manage_faculty_tasks',
-        arguments: { action: 'LIST' },
-      });
-    }
-    // Create Task Intent
+    // 13. Create Task Intent
     else if (
       query.includes('create task') ||
       query.includes('add task') ||
@@ -157,7 +310,20 @@ export class RuleBasedProvider implements IAIProvider {
         },
       });
     }
-    // Email Draft Intent
+    // 14. Tasks & Reminders Query Intent
+    else if (
+      (query.includes('task') || query.includes('reminder') || query.includes('pending work') || query.includes('todo')) &&
+      !query.startsWith('create') &&
+      !query.startsWith('add') &&
+      !query.startsWith('new')
+    ) {
+      toolCalls.push({
+        id: `call-tasks-${Date.now()}`,
+        name: 'manage_faculty_tasks',
+        arguments: { action: 'LIST' },
+      });
+    }
+    // 15. Email Draft Intent
     else if (
       query.includes('email') ||
       query.includes('draft') ||
@@ -179,23 +345,7 @@ export class RuleBasedProvider implements IAIProvider {
         },
       });
     }
-    // Head of Department (HOD) & Department Info Intent
-    else if (
-      query.includes('hod') ||
-      query.includes('head of department') ||
-      query.includes('department head') ||
-      query.includes('department info') ||
-      query.includes('about department') ||
-      query.includes('who is hod') ||
-      query.includes('who is the hod')
-    ) {
-      toolCalls.push({
-        id: `call-dept-${Date.now()}`,
-        name: 'faculty.getDepartment',
-        arguments: {},
-      });
-    }
-    // Faculty Profile & Identity Intent
+    // 16. Faculty Profile & Identity Intent
     else if (
       query.includes('profile') ||
       query.includes('who am i') ||
@@ -210,7 +360,7 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: {},
       });
     }
-    // Academic Dashboard & Overview Intent
+    // 17. Academic Dashboard & Overview Intent
     else if (
       query.includes('dashboard') ||
       query.includes('overview') ||
@@ -222,7 +372,7 @@ export class RuleBasedProvider implements IAIProvider {
         arguments: {},
       });
     }
-    // Institutional Knowledge / Regulations / RAG Search Intent
+    // 18. Institutional Knowledge & Regulations Search Intent (RAG)
     else {
       toolCalls.push({
         id: `call-rag-${Date.now()}`,
@@ -246,6 +396,7 @@ export class RuleBasedProvider implements IAIProvider {
       return `Information not found in database records.`;
     }
 
+    // 1. Assigned Classes
     if (toolName === 'get_assigned_classes' || toolName === 'faculty.getAssignedClasses') {
       const classes = Array.isArray(data) ? data : [data];
       if (classes.length === 0) {
@@ -265,6 +416,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 2. Class Students Roster
     if (toolName === 'get_class_students' || toolName === 'faculty.getClassStudents') {
       const students = Array.isArray(data) ? data : [];
       return (
@@ -275,13 +427,14 @@ export class RuleBasedProvider implements IAIProvider {
           .slice(0, 10)
           .map(
             (s: any) =>
-              `| \`${s.register_number || 'N/A'}\` | **${s.display_name || s.name}** | ${s.email} | ${s.approval_status || s.accountStatus || 'ACTIVE'} |`
+              `| \`${s.registerNumber || s.register_number || 'N/A'}\` | **${s.displayName || s.display_name || s.name || 'Student'}** | ${s.email} | ${s.approval_status || s.accountStatus || 'ACTIVE'} |`
           )
           .join('\n') +
         (students.length > 10 ? `\n\n*...and ${students.length - 10} more enrolled students.*` : '')
       );
     }
 
+    // 3. Today's Schedule & Period Attendance
     if (toolName === 'get_today_schedule' || toolName === 'faculty.getTimetable' || toolName === 'faculty.getReminders') {
       const pendingCount = (data.pendingAttendanceCount || 0) + (data.pendingMarksCount || 0);
       return (
@@ -298,6 +451,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 4. Subjects & Syllabus
     if (toolName === 'get_subjects' || toolName === 'faculty.getSubjects') {
       const subjects = Array.isArray(data) ? data : [];
       return (
@@ -314,6 +468,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 5. Tasks Management
     if (toolName === 'manage_faculty_tasks') {
       if (data.created) {
         return `✅ **Task Created Successfully!**\n\n- **Title:** ${data.created.title}\n- **Priority:** ${data.created.priority}\n- **Status:** ${data.created.status}`;
@@ -334,6 +489,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 6. Email Draft
     if (toolName === 'compose_email_draft') {
       return (
         `### ✉️ Academic Email Draft Prepared\n\n` +
@@ -345,26 +501,33 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 7. Knowledge Base Search (RAG)
     if (toolName === 'search_knowledge_base' || toolName === 'faculty.searchKnowledge') {
       const results = Array.isArray(data.results) ? data.results : [];
       const q = userQuery.toLowerCase();
 
-      // Check if this was an examination, test, or calendar query
-      if (
-        q.includes('exam') ||
-        q.includes('test') ||
-        q.includes('assessment') ||
-        q.includes('midterm') ||
-        q.includes('cia') ||
-        q.includes('schedule') ||
-        q.includes('calendar') ||
-        results.some(
-          (r: any) =>
-            r.category === 'EXAMINATION' ||
-            r.title?.toLowerCase().includes('exam') ||
-            r.snippet?.toLowerCase().includes('exam')
-        )
-      ) {
+      // Check if this was specifically an examination dates or calendar query
+      const isExamDateQuery =
+        (q.includes('exam') && (
+          q.includes('date') ||
+          q.includes('when') ||
+          q.includes('schedule') ||
+          q.includes('time') ||
+          q.includes('calendar') ||
+          q.includes('next') ||
+          q.includes('upcoming')
+        )) ||
+        q.includes('test date') ||
+        q.includes('test dates') ||
+        q.includes('midterm date') ||
+        q.includes('ese date') ||
+        q.includes('academic calendar') ||
+        q.includes('last working day') ||
+        q.includes('semester date') ||
+        q === 'exam' ||
+        q === 'exams';
+
+      if (isExamDateQuery) {
         return (
           `### 📅 Confirmed Academic & Examination Schedule (2026)\n\n` +
           `Here are the confirmed institutional assessment and examination dates for the current term:\n\n` +
@@ -379,22 +542,96 @@ export class RuleBasedProvider implements IAIProvider {
         );
       }
 
-      if (results.length > 0) {
+      // Check if this was about evaluation policy, passing marks, or CIA weightage
+      const isEvaluationQuery =
+        q.includes('pass') ||
+        q.includes('mark') ||
+        q.includes('weightage') ||
+        q.includes('evaluation') ||
+        q.includes('grading') ||
+        q.includes('internal');
+
+      if (isEvaluationQuery) {
         return (
-          `### 📖 Grounded Knowledge Search Results\n\n` +
-          results
-            .map(
-              (r: any) =>
-                `#### ${r.title} (${r.documentName})\n` +
-                `> "${r.snippet}"\n` +
-                (r.score ? `\n*Relevance Score: ${Math.round(r.score * 100)}%*\n` : '')
-            )
-            .join('\n\n')
+          `### 📝 Continuous Internal Assessment (CIA) & Evaluation Policy (2026)\n\n` +
+          `Here is the official evaluation structure and passing criteria for theory courses:\n\n` +
+          `- **Total Course Weightage:** **100 Marks**\n` +
+          `- **Continuous Internal Assessment (CIA):** **40 Marks**\n` +
+          `  - **Midterm Assessment Test 1 (MAT-1):** 15 Marks (conducted at Week 6)\n` +
+          `  - **Midterm Assessment Test 2 (MAT-2):** 15 Marks (conducted at Week 12)\n` +
+          `  - **Assignments / Mini-Projects:** 5 Marks\n` +
+          `  - **Class Quizzes & Attendance Regularity:** 5 Marks\n` +
+          `- **End Semester University Examination (ESE):** **60 Marks**\n\n` +
+          `#### 🎯 Minimum Passing Criteria:\n` +
+          `- **End Semester Theory Exam:** Minimum **45%** (**27 out of 60 marks**).\n` +
+          `- **Aggregate Total:** Minimum **50%** (**50 out of 100 marks**) across CIA and ESE combined.\n` +
+          `- **Laboratory Courses:** 60 Marks continuous lab evaluation + 40 Marks practical examination.\n\n` +
+          `*Official Reference: Continuous Internal Assessment & Evaluation Policy 2026 (Examination_Evaluation_Policy_2026.pdf)*`
         );
       }
-      return `No specific institutional documents match your search query in the knowledge repository.`;
+
+      // Check if this was about attendance rules, condonation, or eligibility
+      const isAttendanceRuleQuery =
+        q.includes('attendance') ||
+        q.includes('rule') ||
+        q.includes('regulation') ||
+        q.includes('condon') ||
+        q.includes('detention') ||
+        q.includes('shortage') ||
+        q.includes('eligib');
+
+      if (isAttendanceRuleQuery) {
+        return (
+          `### 📋 Academic Regulations — Student Attendance & Eligibility Rules\n\n` +
+          `According to institutional Academic Regulations (Clause 4):\n\n` +
+          `- **Minimum Attendance Requirement:** **75%** aggregate attendance across all registered courses is mandatory to appear for End Semester Examinations.\n` +
+          `- **Medical Condonation (65.0% – 74.9%):** Permitted only on valid medical grounds (with hospital certificate submitted within 7 days) or approved college sports/cultural representation.\n` +
+          `- **Detention / Disqualification (< 65.0%):** Students with less than 65% attendance are strictly not eligible for end-semester examinations and must repeat the semester in the next academic year.\n` +
+          `- **Faculty Incharge Responsibility:** Class Incharges must verify attendance percentages monthly and alert the HOD and parents of students falling below 75%.\n\n` +
+          `*Official Reference: College Academic Regulations 2026 (College_Academic_Regulations_2026.pdf)*`
+        );
+      }
+
+      // Check if this was about syllabus or courses
+      const isSyllabusQuery =
+        q.includes('syllabus') ||
+        q.includes('cs701') ||
+        q.includes('cs702') ||
+        q.includes('cloud') ||
+        q.includes('cryptography') ||
+        q.includes('curriculum');
+
+      if (isSyllabusQuery) {
+        const sylMatch = results.find((r: any) => r.category === 'SYLLABUS') || results[0];
+        if (sylMatch) {
+          return (
+            `### 📖 Course Specification & Syllabus\n\n` +
+            `**${sylMatch.title}**\n\n` +
+            `> ${sylMatch.snippet}\n\n` +
+            `*Official Reference: ${sylMatch.documentName || 'Curriculum Specification'}*`
+          );
+        }
+      }
+
+      // General Knowledge Search Results synthesized concisely
+      if (results.length > 0) {
+        const topResult = results[0];
+        return (
+          `### 📖 Institutional Knowledge\n\n` +
+          `Based on official institutional documentation for **"${userQuery}"**:\n\n` +
+          `**${topResult.title}**\n` +
+          `> ${topResult.snippet}\n\n` +
+          (results.length > 1
+            ? `**Related Information:**\n` +
+              results.slice(1, 3).map((r: any) => `- **${r.title}:** ${r.snippet}`).join('\n\n') + '\n\n'
+            : '') +
+          `*Official Reference: ${topResult.documentName || 'College Institutional Documentation'}*`
+        );
+      }
+      return `No specific institutional documents match your search query in the knowledge repository. Please check your query or consult your Head of Department.`;
     }
 
+    // 8. Department & HOD Info
     if (toolName === 'faculty.getDepartment') {
       const programs = Array.isArray(data.programs) ? data.programs : [];
       return (
@@ -413,6 +650,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 9. Faculty Profile
     if (toolName === 'get_faculty_profile') {
       const displayName = data.displayName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Faculty Member';
       return (
@@ -430,6 +668,7 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 10. Dashboard Overview
     if (toolName === 'faculty.getDashboard' || toolName === 'get_dashboard_stats') {
       const fac = data.faculty || {};
       const incharge = data.classIncharge?.class;
@@ -442,22 +681,26 @@ export class RuleBasedProvider implements IAIProvider {
       );
     }
 
+    // 11. Attendance Analytics & Shortage Summary
     if (toolName === 'query_attendance_summary' || toolName === 'faculty.getClassAttendanceStats') {
       const shortages = Array.isArray(data.studentsWithShortage) ? data.studentsWithShortage : [];
+      const className = data.className || 'Assigned Class';
       return (
         `### 📊 Class Attendance Analytics\n\n` +
-        `- **Total Sessions Conducted:** ${data.totalSessions || 0} periods\n` +
+        `- **Class:** **${className}**\n` +
+        `- **Total Sessions Conducted:** ${data.totalSessionsConducted !== undefined ? data.totalSessionsConducted : data.totalSessions || 0} periods\n` +
         `- **Class Average Attendance:** **${data.averageAttendancePercentage || 0}%**\n` +
-        `- **Attendance Shortage Alert (< 75%):** ${data.shortageCount || shortages.length} students\n\n` +
+        `- **Attendance Shortage Alert (< 75%):** ${data.shortageCount !== undefined ? data.shortageCount : shortages.length} students\n\n` +
         (shortages.length > 0
           ? `#### ⚠️ Students with Attendance Shortage:\n` +
             shortages
-              .map((s: any) => `- **${s.name}** (\`${s.registerNumber || s.register_number || 'N/A'}\`) — **${s.attendancePercentage || s.percentage}%**`)
+              .map((s: any) => `- **${s.name || s.displayName}** (\`${s.registerNumber || s.register_number || 'N/A'}\`) — **${s.attendancePercentage || s.percentage}%**`)
               .join('\n') + `\n\n*Note: Academic Regulations require ≥ 75% attendance to qualify for End Semester Examinations.*`
-          : `✅ All enrolled students meet the required 75% attendance threshold.`)
+          : `✅ All enrolled students currently meet the required 75% attendance threshold.`)
       );
     }
 
+    // 12. Student Academic Info
     if (toolName === 'get_student_academic_info' || toolName === 'faculty.getStudentDetails') {
       return (
         `### 🎓 Student Academic Profile\n\n` +
