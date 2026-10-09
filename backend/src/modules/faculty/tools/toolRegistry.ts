@@ -3,6 +3,7 @@ import { FacultyRepository } from '../faculty.repository';
 import { FacultyService } from '../faculty.service';
 import { ToolDefinition, ToolExecutionContext } from '../ai/ai.types';
 import { taskAndEmailStore } from './task.store';
+import { ragKnowledgeEngine } from '../rag/ragEngine';
 
 const repo = new FacultyRepository();
 const facultyService = new FacultyService(repo);
@@ -289,16 +290,13 @@ export const facultyTools: ToolDefinition[] = [
       query: z.string().describe('Search query or question regarding regulations, syllabus, or guidelines.'),
     }),
     execute: async (args, _context: ToolExecutionContext) => {
-      // Lazy load RAG knowledge retriever if available
       try {
-        const ragPath = '../rag/ragEngine';
-        const ragMod = await (eval('import(ragPath)') as Promise<any>);
-        if (ragMod && ragMod.ragKnowledgeEngine) {
-          const results = await ragMod.ragKnowledgeEngine.search(args.query);
+        const results = await ragKnowledgeEngine.search(args.query);
+        if (results && results.length > 0) {
           return { results };
         }
-      } catch {
-        // Fallback knowledge response if RAG module not yet initialized
+      } catch (err) {
+        console.error('RAG search error:', err);
       }
       return {
         results: [
@@ -563,33 +561,12 @@ export const facultyTools: ToolDefinition[] = [
     }),
     execute: async (args, _context: ToolExecutionContext) => {
       try {
-        const ragPath = '../rag/ragEngine';
-        const ragMod = await (eval('import(ragPath)') as Promise<any>);
-        if (ragMod && ragMod.ragKnowledgeEngine) {
-          const results = await ragMod.ragKnowledgeEngine.search(args.query);
-          return { results };
-        }
-      } catch {}
-      return {
-        results: [
-          {
-            id: 'doc-syl-01',
-            title: 'CS701 Cloud Computing & Virtualization Syllabus',
-            documentName: 'CS701_Syllabus_2026.pdf',
-            category: 'SYLLABUS',
-            snippet: 'Covers Cloud Architecture, NIST models, Xen & KVM Virtualization, Kubernetes Container Orchestration. 4 Credits.',
-            score: 0.94,
-          },
-          {
-            id: 'doc-reg-01',
-            title: 'Academic Regulations 2026 — Attendance Requirements',
-            documentName: 'Academic_Regulations_2026.pdf',
-            category: 'REGULATIONS',
-            snippet: 'Section 4.2: Minimum 75% attendance mandatory. Condonation permitted between 65-74% on medical grounds with Principal approval.',
-            score: 0.91,
-          },
-        ],
-      };
+        const results = await ragKnowledgeEngine.search(args.query);
+        return { results };
+      } catch (err) {
+        console.error('faculty.searchKnowledge error:', err);
+        return { results: [] };
+      }
     },
   },
   {
@@ -601,26 +578,15 @@ export const facultyTools: ToolDefinition[] = [
     }),
     execute: async (args, _context: ToolExecutionContext) => {
       try {
-        const ragPath = '../rag/ragEngine';
-        const ragMod = await (eval('import(ragPath)') as Promise<any>);
-        if (ragMod && ragMod.ragKnowledgeEngine) {
-          const results = await ragMod.ragKnowledgeEngine.search(args.query);
-          return {
-            context: results.map((r: any) => `[${r.title}]: ${r.snippet || r.content}`).join('\n\n'),
-            sources: results,
-          };
-        }
-      } catch {}
-      return {
-        context: 'Academic Regulations 2026: Section 4.2 requires 75% attendance for all degree programs.',
-        sources: [
-          {
-            id: 'doc-reg-01',
-            title: 'Academic Regulations 2026',
-            category: 'REGULATIONS',
-          },
-        ],
-      };
+        const results = await ragKnowledgeEngine.search(args.query);
+        return {
+          context: results.map((r: any) => `[${r.title}]: ${r.snippet || r.content}`).join('\n\n'),
+          sources: results,
+        };
+      } catch (err) {
+        console.error('faculty.getKnowledgeContext error:', err);
+        return { context: '', sources: [] };
+      }
     },
   },
 ];

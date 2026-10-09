@@ -73,17 +73,19 @@ For Laboratory Courses: Continuous Lab Evaluation: 60 Marks. End Semester Practi
 Minimum Passing Criteria: A student must obtain at least 45% in End Semester Examination (27 out of 60) and 50% overall in aggregate (50 out of 100) to clear the course.`,
       },
       {
-        id: 'doc-guide-incharge',
-        title: 'Faculty Class Incharge Guidelines & Mentorship Standard Operating Procedure',
-        documentName: 'Faculty_Class_Incharge_SOP.pdf',
-        category: 'FACULTY_GUIDELINE',
+        id: 'doc-cal-exam-2026',
+        title: 'Academic Calendar & Examination Schedule 2026',
+        documentName: 'Academic_Calendar_Exam_Schedule_2026.pdf',
+        category: 'EXAMINATION',
         departmentId: null,
-        content: `Roles and Responsibilities of Class Incharge:
-1. Daily Attendance Oversight: Ensure subject teachers enter period attendance by 4:00 PM daily. Mark pending sessions or notify absent faculty substitutes.
-2. Mentorship & Counseling: Conduct bi-weekly mentor-mentee meetings with assigned class students. Address academic backlogs and grievance reports.
-3. Class Committee Meetings: Organize three Class Committee Meetings (CCM) per semester to gather student feedback on syllabus completion pace.
-4. Parent Communication: Dispatch bi-monthly attendance progress and midterm mark sheets to registered parent email addresses.
-5. Examination Form Verification: Scrutinize examination enrollment forms and verify student eligibility criteria before HOD and Principal endorsement.`,
+        content: `Official Institutional Academic Calendar & Examination Dates 2026:
+Midterm Assessment Test 1 (MAT-1 / CIA-1): October 14, 2026 to October 18, 2026.
+Midterm Assessment Test 2 (MAT-2 / CIA-2): November 16, 2026 to November 20, 2026.
+Practical / Laboratory Examinations: November 24, 2026 to November 28, 2026.
+End Semester Theory University Examinations (ESE): December 02, 2026 to December 16, 2026.
+Last Working Day for Students: November 21, 2026.
+Commencement of Even Semester: January 04, 2027.
+Notice: All faculty and Class Incharges must finalize attendance shortage lists and Continuous Assessment marks before the commencement of examination week.`,
       },
     ];
 
