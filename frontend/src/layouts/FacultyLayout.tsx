@@ -13,6 +13,7 @@ import {
   X,
   RefreshCw,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { useFaculty } from '../modules/faculty/hooks/useFaculty';
 import { facultyApi } from '../modules/faculty/api/facultyApi';
@@ -50,6 +51,7 @@ export const FacultyLayout: React.FC = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { label: 'AI Assistant', path: '/assistant', icon: Sparkles, badge: 'PRO' },
     { label: 'Daily Reminders', path: '/reminders', icon: Clock },
     { label: 'My Assigned Class', path: '/classes', icon: GraduationCap },
     { label: 'Attendance', path: '/attendance', icon: ClipboardCheck },
@@ -137,8 +139,17 @@ export const FacultyLayout: React.FC = () => {
                       }`
                     }
                   >
-                    <Icon className="w-4 h-4 shrink-0 text-slate-400" />
-                    <span>{item.label}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center space-x-3">
+                        <Icon className="w-4 h-4 shrink-0 text-slate-400" />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
                   </NavLink>
                 );
               })}
