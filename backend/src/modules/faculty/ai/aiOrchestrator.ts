@@ -279,4 +279,10 @@ Always be concise, professional, supportive, and format answers using structured
 }
 
 export const facultyOrchestrator = new FacultyAIOrchestrator();
+
+// Register all modular faculty tools
+import('../tools/toolRegistry').then(({ registerAllFacultyTools }) => {
+  registerAllFacultyTools(facultyOrchestrator);
+}).catch(() => {});
+
 export default facultyOrchestrator;
