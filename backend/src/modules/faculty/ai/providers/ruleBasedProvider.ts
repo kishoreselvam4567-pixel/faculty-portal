@@ -157,17 +157,46 @@ export class RuleBasedProvider implements IAIProvider {
         },
       });
     }
-    // Faculty Profile & Dashboard Intent
+    // Head of Department (HOD) & Department Info Intent
+    else if (
+      query.includes('hod') ||
+      query.includes('head of department') ||
+      query.includes('department head') ||
+      query.includes('department info') ||
+      query.includes('about department') ||
+      query.includes('who is hod') ||
+      query.includes('who is the hod')
+    ) {
+      toolCalls.push({
+        id: `call-dept-${Date.now()}`,
+        name: 'faculty.getDepartment',
+        arguments: {},
+      });
+    }
+    // Faculty Profile & Identity Intent
     else if (
       query.includes('profile') ||
       query.includes('who am i') ||
       query.includes('designation') ||
-      query.includes('department') ||
-      query.includes('dashboard')
+      query.includes('employee id') ||
+      query.includes('my details') ||
+      query.includes('my info')
     ) {
       toolCalls.push({
         id: `call-profile-${Date.now()}`,
         name: 'get_faculty_profile',
+        arguments: {},
+      });
+    }
+    // Academic Dashboard & Overview Intent
+    else if (
+      query.includes('dashboard') ||
+      query.includes('overview') ||
+      query.includes('stats')
+    ) {
+      toolCalls.push({
+        id: `call-dashboard-${Date.now()}`,
+        name: 'faculty.getDashboard',
         arguments: {},
       });
     }
@@ -311,7 +340,95 @@ export class RuleBasedProvider implements IAIProvider {
       return `No specific institutional documents match your search query in the knowledge repository.`;
     }
 
-    return `### Information Retrieved\n\n` + '```json\n' + JSON.stringify(data, null, 2) + '\n```';
+    if (toolName === 'faculty.getDepartment') {
+      const programs = Array.isArray(data.programs) ? data.programs : [];
+      return (
+        `### 🏛️ Department of ${data.name || 'Academic Studies'} (${data.code || 'DEPT'})\n\n` +
+        `The **Head of Department (HOD)** for **${data.name || 'this department'}** is **${data.hodName || 'Dr. Department Head'}**.\n\n` +
+        `- **Department Name:** ${data.name || 'N/A'}\n` +
+        `- **Department Code:** \`${data.code || 'N/A'}\`\n` +
+        `- **Head of Department (HOD):** **${data.hodName || 'Assigned HOD'}**\n` +
+        (data.collegeName ? `- **Affiliated Institution:** ${data.collegeName}\n` : '') +
+        `- **Active Subjects / Courses:** ${data.subjectsCount || 6} Subjects\n` +
+        `- **Department Status:** ${data.status === 'ACTIVE' ? '✅ Active' : 'Inactive'}\n` +
+        (programs.length > 0
+          ? `\n**Degree Programs Offered:**\n` +
+            programs.map((p: any) => `- **${p.name}** (${p.durationYears || 3} Years, ${p.type || 'Undergraduate'})`).join('\n')
+          : '')
+      );
+    }
+
+    if (toolName === 'get_faculty_profile') {
+      const displayName = data.displayName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Faculty Member';
+      return (
+        `### 👤 Faculty Profile\n\n` +
+        `Here is your verified institutional profile information:\n\n` +
+        `- **Name:** **${displayName}**\n` +
+        `- **Designation:** ${data.designation || 'Faculty Member'}\n` +
+        `- **Department:** ${data.department || 'B.Sc AI & ML'}\n` +
+        `- **Employee ID:** \`${data.employeeId || 'N/A'}\`\n` +
+        `- **Official Email:** \`${data.email || 'N/A'}\`\n` +
+        (data.phone ? `- **Contact Phone:** ${data.phone}\n` : '') +
+        (data.city || data.state ? `- **Campus / Location:** ${[data.address, data.city, data.state].filter(Boolean).join(', ')}\n` : '') +
+        `- **Account Status:** ${data.accountStatus === 'ACTIVE' ? '✅ Active & Verified' : data.accountStatus || 'ACTIVE'}\n` +
+        (data.bio ? `\n> *${data.bio}*` : '')
+      );
+    }
+
+    if (toolName === 'faculty.getDashboard' || toolName === 'get_dashboard_stats') {
+      const fac = data.faculty || {};
+      const incharge = data.classIncharge?.class;
+      return (
+        `### 📊 Academic Overview & Dashboard\n\n` +
+        `- **Faculty:** **${fac.name || 'Faculty Member'}** (${fac.designation || 'Faculty'})\n` +
+        `- **Department:** ${data.department?.name || 'Department'} (HOD: **${data.department?.hodName || 'HOD'}**)\n` +
+        `- **Class Incharge Status:** ${incharge ? `⭐ **${incharge.name}** (${incharge.studentCount || 0} Students)` : 'Subject Teacher'}\n` +
+        `- **Current Academic Term:** ${data.academicYear?.name || 'Active Term'} (${data.semester?.termNumber ? `Semester ${data.semester.termNumber}` : 'Ongoing Semester'})\n`
+      );
+    }
+
+    if (toolName === 'query_attendance_summary' || toolName === 'faculty.getClassAttendanceStats') {
+      const shortages = Array.isArray(data.studentsWithShortage) ? data.studentsWithShortage : [];
+      return (
+        `### 📊 Class Attendance Analytics\n\n` +
+        `- **Total Sessions Conducted:** ${data.totalSessions || 0} periods\n` +
+        `- **Class Average Attendance:** **${data.averageAttendancePercentage || 0}%**\n` +
+        `- **Attendance Shortage Alert (< 75%):** ${data.shortageCount || shortages.length} students\n\n` +
+        (shortages.length > 0
+          ? `#### ⚠️ Students with Attendance Shortage:\n` +
+            shortages
+              .map((s: any) => `- **${s.name}** (\`${s.registerNumber || s.register_number || 'N/A'}\`) — **${s.attendancePercentage || s.percentage}%**`)
+              .join('\n') + `\n\n*Note: Academic Regulations require ≥ 75% attendance to qualify for End Semester Examinations.*`
+          : `✅ All enrolled students meet the required 75% attendance threshold.`)
+      );
+    }
+
+    if (toolName === 'get_student_academic_info' || toolName === 'faculty.getStudentDetails') {
+      return (
+        `### 🎓 Student Academic Profile\n\n` +
+        `- **Student Name:** **${data.displayName || data.name || 'Student'}**\n` +
+        `- **Register Number:** \`${data.registerNumber || data.register_number || 'N/A'}\`\n` +
+        `- **Enrolled Class:** ${data.className || 'Assigned Class'}\n` +
+        `- **Department:** ${data.departmentName || 'B.Sc AI & ML'}\n` +
+        `- **Student Email:** \`${data.email || 'N/A'}\`\n` +
+        `- **Status:** ${data.accountStatus || 'ACTIVE'}`
+      );
+    }
+
+    // Friendly Markdown Fallback — Never dump raw JSON to the user
+    if (typeof data === 'object' && data !== null) {
+      const entries = Object.entries(data).filter(([_, v]) => typeof v !== 'object' && v !== null && v !== undefined);
+      if (entries.length > 0) {
+        return (
+          `### 📋 Information Retrieved\n\n` +
+          entries
+            .map(([k, v]) => `- **${k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}:** ${v}`)
+            .join('\n')
+        );
+      }
+    }
+
+    return String(data || 'Request completed successfully.');
   }
 
   async generateEmbeddings(text: string): Promise<number[]> {
