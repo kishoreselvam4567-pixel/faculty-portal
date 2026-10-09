@@ -16,6 +16,12 @@ import {
   AttendanceSessionSummary,
   ClassAttendanceStatsResponse,
   TodayRemindersSummary,
+  ChatConversationSummary,
+  ChatMessage,
+  ChatRequestPayload,
+  ChatResponsePayload,
+  FacultyTaskItem,
+  FacultyEmailDraftItem,
 } from '../types/faculty.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -138,6 +144,74 @@ export const facultyApi = {
   // Today's Reminders
   getTodayReminders: async (): Promise<TodayRemindersSummary> => {
     const res = await api.get<TodayRemindersSummary>('/faculty/today-reminders');
+    return res.data;
+  },
+
+  // AI Assistant Endpoints
+  getConversations: async (): Promise<ChatConversationSummary[]> => {
+    const res = await api.get<ChatConversationSummary[]>('/faculty/assistant/conversations');
+    return res.data;
+  },
+
+  createConversation: async (title?: string): Promise<ChatConversationSummary> => {
+    const res = await api.post<ChatConversationSummary>('/faculty/assistant/conversations', { title });
+    return res.data;
+  },
+
+  getConversationMessages: async (conversationId: string): Promise<ChatMessage[]> => {
+    const res = await api.get<ChatMessage[]>(`/faculty/assistant/conversations/${conversationId}/messages`);
+    return res.data;
+  },
+
+  renameConversation: async (conversationId: string, title: string): Promise<ChatConversationSummary> => {
+    const res = await api.patch<ChatConversationSummary>(`/faculty/assistant/conversations/${conversationId}`, { title });
+    return res.data;
+  },
+
+  deleteConversation: async (conversationId: string): Promise<{ success: boolean }> => {
+    const res = await api.delete<{ success: boolean }>(`/faculty/assistant/conversations/${conversationId}`);
+    return res.data;
+  },
+
+  sendChatMessage: async (payload: ChatRequestPayload): Promise<ChatResponsePayload> => {
+    const res = await api.post<ChatResponsePayload>('/faculty/assistant/chat', payload);
+    return res.data;
+  },
+
+  // Tasks Management
+  getTasks: async (): Promise<FacultyTaskItem[]> => {
+    const res = await api.get<FacultyTaskItem[]>('/faculty/tasks');
+    return res.data;
+  },
+
+  createTask: async (task: Partial<FacultyTaskItem>): Promise<FacultyTaskItem> => {
+    const res = await api.post<FacultyTaskItem>('/faculty/tasks', task);
+    return res.data;
+  },
+
+  updateTask: async (taskId: string, updates: Partial<FacultyTaskItem>): Promise<FacultyTaskItem> => {
+    const res = await api.patch<FacultyTaskItem>(`/faculty/tasks/${taskId}`, updates);
+    return res.data;
+  },
+
+  deleteTask: async (taskId: string): Promise<{ success: boolean }> => {
+    const res = await api.delete<{ success: boolean }>(`/faculty/tasks/${taskId}`);
+    return res.data;
+  },
+
+  // Email Drafts & Sending
+  getEmailDrafts: async (): Promise<FacultyEmailDraftItem[]> => {
+    const res = await api.get<FacultyEmailDraftItem[]>('/faculty/email/drafts');
+    return res.data;
+  },
+
+  createEmailDraft: async (draft: Partial<FacultyEmailDraftItem>): Promise<FacultyEmailDraftItem> => {
+    const res = await api.post<FacultyEmailDraftItem>('/faculty/email/drafts', draft);
+    return res.data;
+  },
+
+  sendEmail: async (data: { draftId?: string; recipients: string[]; subject: string; body: string }): Promise<{ success: boolean; messageId?: string }> => {
+    const res = await api.post<{ success: boolean; messageId?: string }>('/faculty/email/send', data);
     return res.data;
   },
 
